@@ -1,0 +1,57 @@
+Description
+------------
+Package ni488 is a wrapper around the NI-488.2 GPIB driver: it allows an
+application to communicate with GPIB enabled test equipment. NI-488.2 is an industry
+standard for GPIB communications.
+
+Lots of miscellaneous NI-488.2 information:
+http://sine.ni.com/psp/app/doc/p/id/psp-356
+
+GPIB Driver Versions for Microsoft Windows and DOS:
+http://zone.ni.com/devzone/cda/tut/p/id/5326#toc0
+
+GPIB Driver Versions for non-Microsoft Operating Systems:
+http://zone.ni.com/devzone/cda/tut/p/id/5458
+
+*the gpib driver is 32-bit only
+
+Usage
+-----
+See example.c
+
+Compiling
+---------
+ni488 package: $ make install
+example: $ 8g example.go ; 8l -o example example.8 ; ./example
+
+Testing
+-------
+
+
+Misc Notes
+----------
+
+--- OSX info ---
+Method 1: Startup key combination (for current startup only)
+
+If your Mac uses the 32-bit kernel by default, but supports the 64-bit kernel, you 
+can start up using the 64-bit kernel by holding the 6 and 4 keys during startup.
+
+If your Mac uses the 64-bit kernel by default, you can start up with the 32-bit 
+kernel by holding the 3 and 2 keys during startup. Your Mac will revert to the 
+default kernel the next time you reboot it.
+ 
+
+Method 2: On-disk setting (persistent)
+
+To select the 64-bit kernel for the current startup disk, use the following command in Terminal:
+
+sudo systemsetup -setkernelbootarchitecture x86_64
+
+To select the 32-bit kernel for the current startup disk, use the following command in Terminal:
+
+sudo systemsetup -setkernelbootarchitecture i386
+
+Note: This setting is stored in the /Library/Preferences/SystemConfiguration/com.apple.Boot.plist 
+file and will take effect every time you start up from this disk. If you start up from a different 
+disk, the setting on that disk, or the hardware default, will take effect.
