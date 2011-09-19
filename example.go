@@ -135,7 +135,7 @@ func main() {
 	}
 
 	//--- App body
-	cmd := []byte("*IDN?")
+	cmd := "*IDN?"
 	Ibwrt(device, cmd) // Send the identification query command
 	if (ThreadIbsta() & ERR) == 0 {
 		fmt.Println("Ibwrt success...\n")
