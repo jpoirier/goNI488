@@ -261,7 +261,7 @@ func ThreadIbcnt() int {
 // The return value is either the number of bytes actually transferred by
 // the most recent GPIB read, write, or command operation for the current
 // thread of execution or an error code if an error occured.
-func () int {
+func ThreadIbcntl() int {
 	return int(C.ThreadIbcntl())
 }
 
