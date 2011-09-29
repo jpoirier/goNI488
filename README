@@ -1,44 +1,52 @@
+-=-=-=-=-=-=-=-=-
 Description
-------------
+-=-=-=-=-=-=-=-=-
+
 Package ni488 is a wrapper around the NI-488.2 GPIB driver: it allows an
-application to communicate with GPIB enabled test equipment. NI-488.2 is an industry
-standard for GPIB communications.
+application to communicate with GPIB enabled test equipment. NI-488.2 is an
+industry standard for GPIB communications.
 
 Lots of miscellaneous NI-488.2 information:
-http://sine.ni.com/psp/app/doc/p/id/psp-356
+    http://sine.ni.com/psp/app/doc/p/id/psp-356
 
 GPIB Driver Versions for Microsoft Windows and DOS:
-http://zone.ni.com/devzone/cda/tut/p/id/5326#toc0
+    http://zone.ni.com/devzone/cda/tut/p/id/5326#toc0
 
 GPIB Driver Versions for non-Microsoft Operating Systems:
-http://zone.ni.com/devzone/cda/tut/p/id/5458
+    http://zone.ni.com/devzone/cda/tut/p/id/5458
 
-Direct download: http://download.ni.com/support/softlib/gpib/
+Direct download: 
+    http://download.ni.com/support/softlib/gpib/
 
-Windows: there are two different 32-bit versions of the DLL, gpib-32.dll 
-and ni4882.dll, and both compile against ni488.h. The 64-bit DLL is also
-named ni4882.dll but it's compiled against ni4882.dll.
+Drivers:
 
-OSX: 32-bit dynamic library compiled against ni488.h. 
+    Windows - 32-bit DLL's are compiled against ni488.h and the 64-bit version
+    against ni4882.h.
 
-Linux: Nothing on Linux yet. :-(
+    OSX - 32-bit library compiled against ni488.h. 
 
+    Linux - Nothing on Linux yet. :-(
 
+-=-=-=-=-=-=-=-=-
 Usage
------
+-=-=-=-=-=-=-=-=-
+
 See example.go
 
+-=-=-=-=-=-=-=-=-
 Compiling
----------
+-=-=-=-=-=-=-=-=-
+
 To build the ni488 package: $ make install
 To build the example: $ 8g example.go ; 8l -o example example.8 ; ./example
 
+-=-=-=-=-=-=-=-=-
 Testing
--------
+-=-=-=-=-=-=-=-=-
 
-
-Misc Notes
-----------
+-=-=-=-=-=-=-=-=-
+My Misc Notes
+-=-=-=-=-=-=-=-=-
 
 --- OSX info ---
 Method 1: Startup key combination (for current startup only)
