@@ -2,7 +2,7 @@
 // Distributable under the terms of The New BSD License
 // that can be found in the LICENSE file.
 
-// Package ni488 is a wrapper around an NI-488.2 interface, which allows
+// Package ni4882 is a wrapper around an NI-488.2 interface, which allows
 // communications with GPIB capable teting equipment. NI-488.2 is an industry
 // standard for GPIB communications.
 //
@@ -19,203 +19,34 @@
 // GPIB Driver Versions for non-Microsoft Operating Systems:
 //     http://zone.ni.com/devzone/cda/tut/p/id/5458
 //
+// Direct download: http://download.ni.com/support/softlib/gpib/
+//
 package ni488
 
 // TODO:
 // -
 
-// #cgo linux CFLAGS: -arch i386
-// #cgo linux LDFLAGS: -lgpibapi
-// #cgo darwin CFLAGS: -arch i386 -I/Library/Frameworks/NI488.framework/Headers
-// #cgo darwin LDFLAGS: -framework NI488
-// #cgo windows CFLAGS: -m32
-// #cgo windows LDFLAGS: -lgpib-32.dll
-// #include <ni488.h>
-// #include <stdlib.h>
+/*
+#cgo linux LDFLAGS: -lgpibapi
+#cgo darwin CFLAGS: -I/Library/Frameworks/NI488.framework/Headers
+#cgo darwin LDFLAGS: -framework NI488
+#cgo windows CFLAGS: -I.
+#cgo windows LDFLAGS: -LC:/WINDOWS/system32 -lgpib-32
+#include <stdlib.h>
+#ifdef V2001
+#define size_g long
+#include <ni488.h>
+#else
+#define size_g size_t
+#include <ni4882.h>
+#endif
+*/
 import "C"
-
-import (
-	"unsafe"
-)
+import "unsafe"
 
 var PackageVersion string = "v0.2"
 
 type Addr4882_t C.Addr4882_t
-
-// HANDY CONSTANTS FOR USE BY APPLICATION PROGRAMS ...
-const (
-	UNL = C.UNL // GPIB unlisten command
-	UNT = C.UNT // GPIB untalk command
-	GTL = C.GTL // GPIB go to local
-	SDC = C.SDC // GPIB selected device clear
-	PPC = C.PPC // GPIB parallel poll configure
-	GET = C.GET // GPIB group execute trigger
-	TCT = C.TCT // GPIB take control
-	LLO = C.LLO // GPIB local lock out
-	DCL = C.DCL // GPIB device clear
-	PPU = C.PPU // GPIB parallel poll unconfigure
-	SPE = C.SPE // GPIB serial poll enable
-	SPD = C.SPD // GPIB serial poll disable
-	PPE = C.PPE // GPIB parallel poll enable
-	PPD = C.PPD // GPIB parallel poll disable
-
-	// GPIB status bit vector: global variable ibsta and wait mask
-	ERR  = C.ERR  // Error detected
-	TIMO = C.TIMO // Timeout
-	END  = C.END  // EOI or EOS detected
-	SRQI = C.SRQI // SRQ detected by CIC
-	RQS  = C.RQS  // Device needs service
-	CMPL = C.CMPL // I/O completed
-	LOK  = C.LOK  // Local lockout state
-	REM  = C.REM  // Remote state
-	CIC  = C.CIC  // Controller-in-Charge
-	ATN  = C.ATN  // Attention asserted
-	TACS = C.TACS // Talker active
-	LACS = C.LACS // Listener active
-	DTAS = C.DTAS // Device trigger state
-	DCAS = C.DCAS // Device clear state
-
-	// Error messages returned in global variable iberr
-	EDVR = C.EDVR // System error
-	ECIC = C.ECIC // Function requires GPIB board to be CIC
-	ENOL = C.ENOL // Write function detected no Listeners
-	EADR = C.EADR // Interface board not addressed correctly
-	EARG = C.EARG // Invalid argument to function call
-	ESAC = C.ESAC // Function requires GPIB board to be SAC
-	EABO = C.EABO // I/O operation aborted
-	ENEB = C.ENEB // Non-existent interface board
-	EDMA = C.EDMA // Error performing DMA
-	EOIP = C.EOIP // I/O operation started before previous
-	// Operation completed
-	ECAP = C.ECAP // No capability for intended operation
-	EFSO = C.EFSO // File system operation error
-	EBUS = C.EBUS // Command error during device call
-	ESTB = C.ESTB // Serial poll status byte lost
-	ESRQ = C.ESRQ // SRQ remains asserted
-	ETAB = C.ETAB // The return buffer is full.
-	ELCK = C.ELCK // Address or board is locked.
-	EARM = C.EARM // The ibnotify Callback failed to rearm
-	EHDL = C.EHDL // The input handle is invalid
-	EWIP = C.EWIP // Wait already in progress on input ud
-	ERST = C.ERST // The event notification was cancelled
-	// due to a reset of the interface
-	EPWR = C.EPWR // The system or board has lost power or
-	// gone to standby
-
-	// Warning messages returned in global variable iberr
-	WCFG = C.WCFG // Configuration warning
-	ECFG = C.ECFG
-
-	// EOS mode bits
-	BIN  = C.BIN  // Eight bit compare
-	XEOS = C.XEOS // Send END with EOS byte
-	REOS = C.REOS // Terminate read on EOS
-
-	// Timeout values and meanings
-	TNONE  = C.TNONE  // Infinite timeout (disabled)
-	T10us  = C.T10us  // Timeout of 10 us (ideal)
-	T30us  = C.T30us  // Timeout of 30 us (ideal)
-	T100us = C.T100us // Timeout of 100 us (ideal)
-	T300us = C.T300us // Timeout of 300 us (ideal)
-	T1ms   = C.T1ms   // Timeout of 1 ms (ideal)
-	T3ms   = C.T3ms   // Timeout of 3 ms (ideal)
-	T10ms  = C.T10ms  // Timeout of 10 ms (ideal)
-	T30ms  = C.T30ms  // Timeout of 30 ms (ideal)
-	T100ms = C.T100ms // Timeout of 100 ms (ideal)
-	T300ms = C.T300ms // Timeout of 300 ms (ideal)
-	T1s    = C.T1s    // Timeout of 1 s (ideal)
-	T3s    = C.T3s    // Timeout of 3 s (ideal)
-	T10s   = C.T10s   // Timeout of 10 s (ideal)
-	T30s   = C.T30s   //  Timeout of 30 s (ideal)
-	T100s  = C.T100s  // Timeout of 100 s (ideal)
-	T300s  = C.T300s  // Timeout of 300 s (ideal)
-	T1000s = C.T1000s // Timeout of 1000 s (ideal)
-
-	// IBLN Constants
-	NO_SAD  = C.NO_SAD
-	ALL_SAD = C.ALL_SAD
-
-	// Constants used for the second parameter of the ibconfig function.
-	// They are the "option" selection codes.
-	IbcPAD            = C.IbcPAD            // Primary Address
-	IbcSAD            = C.IbcSAD            // Secondary Address
-	IbcTMO            = C.IbcTMO            // Timeout Value
-	IbcEOT            = C.IbcEOT            // Send EOI with last data byte?
-	IbcPPC            = C.IbcPPC            // Parallel Poll Configure
-	IbcREADDR         = C.IbcREADDR         // Repeat Addressing
-	IbcAUTOPOLL       = C.IbcAUTOPOLL       // Disable Auto Serial Polling
-	IbcCICPROT        = C.IbcCICPROT        // Use the CIC Protocol?
-	IbcIRQ            = C.IbcIRQ            // Use PIO for I/O
-	IbcSC             = C.IbcSC             // Board is System Controller?
-	IbcSRE            = C.IbcSRE            // Assert SRE on device calls?
-	IbcEOSrd          = C.IbcEOSrd          // Terminate reads on EOS
-	IbcEOSwrt         = C.IbcEOSwrt         // Send EOI with EOS character
-	IbcEOScmp         = C.IbcEOScmp         // Use 7 or 8-bit EOS compare
-	IbcEOSchar        = C.IbcEOSchar        // The EOS character.
-	IbcPP2            = C.IbcPP2            // Use Parallel Poll Mode 2.
-	IbcTIMING         = C.IbcTIMING         // NORMAL, HIGH, or VERY_HIGH timing.
-	IbcDMA            = C.IbcDMA            // Use DMA for I/O
-	IbcReadAdjust     = C.IbcReadAdjust     // Swap bytes during an ibrd.
-	IbcWriteAdjust    = C.IbcWriteAdjust    // Swap bytes during an ibwrt.
-	IbcSendLLO        = C.IbcSendLLO        // Enable/disable the sending of LLO.
-	IbcSPollTime      = C.IbcSPollTime      // Set the timeout value for serial polls.
-	IbcPPollTime      = C.IbcPPollTime      // Set the parallel poll length period.
-	IbcEndBitIsNormal = C.IbcEndBitIsNormal // Remove EOS from END bit of IBSTA.
-	IbcUnAddr         = C.IbcUnAddr         // Enable/disable device unaddressing.
-	IbcSignalNumber   = C.IbcSignalNumber   // Set UNIX signal number - unsupported
-	IbcBlockIfLocked  = C.IbcBlockIfLocked  // Enable/disable blocking for locked boards/devices
-	IbcHSCableLength  = C.IbcHSCableLength  // Length of cable specified for high speed timing.
-	IbcIst            = C.IbcIst            // Set the IST bit.
-	IbcRsv            = C.IbcRsv            // Set the RSV byte.
-	IbcLON            = C.IbcLON            // Enter listen only mode
-
-	// Constants that can be used (in addition to the ibconfig constants)
-	// when calling the ibask() function.
-	IbaPAD            = C.IbaPAD
-	IbaSAD            = C.IbaSAD
-	IbaTMO            = C.IbaTMO
-	IbaEOT            = C.IbaEOT
-	IbaPPC            = C.IbaPPC
-	IbaREADDR         = C.IbaREADDR
-	IbaAUTOPOLL       = C.IbaAUTOPOLL
-	IbaCICPROT        = C.IbaCICPROT
-	IbaIRQ            = C.IbaIRQ
-	IbaSC             = C.IbaSC
-	IbaSRE            = C.IbaSRE
-	IbaEOSrd          = C.IbaEOSrd
-	IbaEOSwrt         = C.IbaEOSwrt
-	IbaEOScmp         = C.IbaEOScmp
-	IbaEOSchar        = C.IbaEOSchar
-	IbaPP2            = C.IbaPP2
-	IbaTIMING         = C.IbaTIMING
-	IbaDMA            = C.IbaDMA
-	IbaReadAdjust     = C.IbaReadAdjust
-	IbaWriteAdjust    = C.IbaWriteAdjust
-	IbaSendLLO        = C.IbaSendLLO
-	IbaSPollTime      = C.IbaSPollTime
-	IbaPPollTime      = C.IbaPPollTime
-	IbaEndBitIsNormal = C.IbaEndBitIsNormal
-	IbaUnAddr         = C.IbaUnAddr
-	IbaSignalNumber   = C.IbaSignalNumber
-	IbaBlockIfLocked  = C.IbaBlockIfLocked
-	IbaHSCableLength  = C.IbaHSCableLength
-	IbaIst            = C.IbaIst
-	IbaRsv            = C.IbaRsv
-	IbaLON            = C.IbaLON
-	IbaSerialNumber   = C.IbaSerialNumber
-	IbaBNA            = C.IbaBNA // A device's access board.
-
-	// Values used by the Send 488.2 command.
-	NULLend = C.NULLend // Do nothing at the end of a transfer.
-	NLend   = C.NLend   // Send NL with EOI after a transfer.
-	DABend  = C.DABend  // Send EOI with the last DAB.
-
-	// Value used by the 488.2 Receive command.
-	STOPend = C.STOPend
-
-	// Terminates an address list
-	NOADDR = C.NOADDR
-)
 
 //  Functions to access Thread-Specific copies of the GPIB global vars
 
@@ -234,8 +65,8 @@ const (
 // value describes the state of the GPIB and the result of the most recent
 // GPIB function call in the thread.  Call ThreadIberr for a specific error
 // code.
-func ThreadIbsta() int {
-	return int(C.ThreadIbsta())
+func ThreadIbsta() uint32 {
+	return uint32(C.ThreadIbsta())
 }
 
 // ThreadIberr returns the thread-specific iberr value for the current thread.
@@ -243,8 +74,8 @@ func ThreadIbsta() int {
 // The return value is the most recent GPIB error code for the current
 // thread of execution. The value is meaningful only when ThreadIbsta returns
 // a value with the ERR bit set.
-func ThreadIberr() int {
-	return int(C.ThreadIberr())
+func ThreadIberr() uint32 {
+	return uint32(C.ThreadIberr())
 }
 
 // ThreadIbcnt returns the thread-specific ibcnt value for the current thread.
@@ -252,8 +83,8 @@ func ThreadIberr() int {
 // The return value is either the number of bytes actually transferred by
 // the most recent GPIB read, write, or command operation for the current
 // thread of execution or an error code if an error occured.
-func ThreadIbcnt() int {
-	return int(C.ThreadIbcnt())
+func ThreadIbcnt() uint32 {
+	return uint32(C.ThreadIbcnt())
 }
 
 // ThreadIbcntl returns the thread-specific ibcntl value for the current thread.
@@ -261,38 +92,11 @@ func ThreadIbcnt() int {
 // The return value is either the number of bytes actually transferred by
 // the most recent GPIB read, write, or command operation for the current
 // thread of execution or an error code if an error occured.
-func ThreadIbcntl() int {
-	return int(C.ThreadIbcntl())
+func ThreadIbcntl() uint32 {
+	return uint32(C.ThreadIbcnt())
 }
 
 //  NI-488 Functions
-
-// Ibfind opens and initialize a board or a user-configured device descriptor.
-//
-// Performs the equivalent of an ibonl 1 to initialize the board or
-// device descriptor. The unit descriptor returned by ibfind remains valid
-// until the board or device is put offline using ibonl 0.
-//
-// If ibfind is unable to get a valid descriptor, a â1 is returned; the ERR
-// bit is set in ibsta and iberr contains EDVR.
-func Ibfind(udname string) (ud int) {
-	n := C.CString(udname)
-	defer C.free(unsafe.Pointer(n))
-	ud = int(C.ibfindA(n))
-	return
-}
-
-// Ibbn assigns the device described by ud to the access board described by
-// bname.
-//
-// All subsequent bus activity with device ud occurs through the access board
-// bname. If the call succeeds iberr contains the previous access board index.
-func Ibbn(ud int, udname string) (ibsta int) {
-	n := C.CString(udname)
-	defer C.free(unsafe.Pointer(n))
-	ibsta = int(C.ibbnaA(C.int(ud), n))
-	return
-}
 
 // Ibrdf reads data asynchronously from a device into a user buffer.
 //
@@ -300,23 +104,10 @@ func Ibbn(ud int, udname string) (ibsta int) {
 // a GPIB device, and places the data into the file specified by filename.
 // If ud is a board descriptor, ibrdf reads data from a GPIB device and
 // places the data into the file specified by filename
-func Ibrdf(ud int, filename string) (ibsta int) {
+func Ibrdf(ud int, filename string) (ibsta uint32) {
 	n := C.CString(filename)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = int(C.ibrdfA(C.int(ud), n))
-	return
-}
-
-// Ibwrtf writes data to a device from a file.
-//
-// If ud is a device descriptor, ibwrtf addresses the GPIB and writes all
-// of the bytes from the file filename to a GPIB device. If ud is a board
-// descriptor, ibwrtf writes all of the bytes of data from the file filename
-// to a GPIB device.
-func Ibwrtf(ud int, filename string) (ibsta int) {
-	n := C.CString(filename)
-	defer C.free(unsafe.Pointer(n))
-	ibsta = int(C.ibwrtfA(C.int(ud), n))
+	ibsta = uint32(C.ibrdfA(C.int(ud), n))
 	return
 }
 
@@ -324,8 +115,8 @@ func Ibwrtf(ud int, filename string) (ibsta int) {
 // specified board or device.
 //
 // The current value of the selected configuration item is returned in v.
-func Ibask(ud, option int) (ibsta, v int) {
-	ibsta = int(C.ibask(C.int(ud), C.int(option),
+func Ibask(ud, option int) (ibsta, v uint32) {
+	ibsta = uint32(C.ibask(C.int(ud), C.int(option),
 		(*C.int)(unsafe.Pointer(&v))))
 	return
 }
@@ -337,15 +128,15 @@ func Ibask(ud, option int) (ibsta, v int) {
 // is non-zero the GPIB board takes control synchronously. Before calling
 // ibcac, the GPIB board must already be CIC. To make the board CIC, use
 // the ibsic function.
-func Ibcac(ud, v int) (ibsta int) {
-	ibsta = int(C.ibcac(C.int(ud), C.int(v)))
+func Ibcac(ud, v int) (ibsta uint32) {
+	ibsta = uint32(C.ibcac(C.int(ud), C.int(v)))
 	return
 }
 
 // Ibclr sends the GPIB Selected Device Clear (SDC) message to the device
 // described by ud.
-func Ibclr(ud int) (ibsta int) {
-	ibsta = int(C.ibclr(C.int(ud)))
+func Ibclr(ud int) (ibsta uint32) {
+	ibsta = uint32(C.ibclr(C.int(ud)))
 	return
 }
 
@@ -353,10 +144,10 @@ func Ibclr(ud int) (ibsta int) {
 //
 // Sends cmds over the GPIB as command bytes (interface messages). The actual
 // transferred byte count is returned in the global variable ibcntl.
-func Ibcmd(ud int, cmds string) (ibsta int) {
+func Ibcmd(ud int, cmds string) (ibsta uint32) {
 	n := C.CString(cmds)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = int(C.ibcmd(C.int(ud), unsafe.Pointer(n), C.long(len(cmds))))
+	ibsta = uint32(C.ibcmd(C.int(ud), unsafe.Pointer(n), C.size_g(len(cmds))))
 	return
 }
 
@@ -365,10 +156,10 @@ func Ibcmd(ud int, cmds string) (ibsta int) {
 // Sends cmds asynchronously over the GPIB as command bytes (interface
 // messages). The actual transferred byte count is returned in the global
 // variable ibcntl.
-func Ibcmda(ud int, cmds string) (ibsta int) {
+func Ibcmda(ud int, cmds string) (ibsta uint32) {
 	n := C.CString(cmds)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = int(C.ibcmda(C.int(ud), unsafe.Pointer(n), C.long(len(cmds))))
+	ibsta = uint32(C.ibcmda(C.int(ud), unsafe.Pointer(n), C.size_g(len(cmds))))
 	return
 }
 
@@ -376,8 +167,8 @@ func Ibcmda(ud int, cmds string) (ibsta int) {
 //
 // Changes a configuration item in option to the specified value in
 // v for the selected board or device.
-func Ibconfig(ud, option, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(option), C.int(v)))
+func Ibconfig(ud, option, v int) (ibsta uint32) {
+	ibsta = uint32(C.ibconfig(C.int(ud), C.int(option), C.int(v)))
 	return
 }
 
@@ -385,47 +176,34 @@ func Ibconfig(ud, option, v int) (ibsta int) {
 //
 // Acquires a device descriptor to use in subsequent device-level NI-488
 // functions. It opens and initializes a device descriptor, and configures
-// it according to the input parameters. Returns the device descriptor or â1.
+// it according to the input parameters. Returns the device descriptor or 1.
 func Ibdev(boardID, pad, sad, tmo, eot, eos int) (dev int) {
 	dev = int(C.ibdev(C.int(boardID), C.int(pad), C.int(sad),
 		C.int(tmo), C.int(eot), C.int(eos)))
 	return
 }
 
-// Ibdma enables or disables DMA.
-//
-// Enables or disables DMA transfers for the board, according to v.
-// If v is zero, then DMA is not used for GPIB I/O transfers, and if v
-// is non-zero, then DMA is used for GPIB I/O transfers.
-func Ibdma(ud, v int) (ibsta int) {
-	ibsta = int(C.ibdma(C.int(ud), C.int(v)))
-	return
-}
-
-//extern int  ibexpert (int ud, int option, void * Input, void * Output);
-//func Ibexpert() int {
-//	return int(C.ibexpert())
+// TODO
+//extern int  ibexpert (int ud, int option, void * input, void * Output);
+//func Ibexpert(ud, option int, input, output string) uint32 {
+//	in := C.CString(input)
+//	defer C.free(unsafe.Pointer(in))
+//	return uint32(C.ibexpert(C.int(ud), C.int(option),
+//			unsafe.Pointer(input), unsafe.Pointer(output)))
 //}
 
-// Ibeos configures the EOS termination mode or EOS character for the board
-// or device.
+// Ibfind opens and initialize a board or a user-configured device descriptor.
 //
-// The parameter v describes the new end-of-string (EOS)
-// configuration to use. If v is zero, then the EOS configuration is
-// disabled. Otherwise, the low byte is the EOS character and the upper
-// byte contains flags which define the EOS mode.
-func Ibeos(ud, v int) (ibsta int) {
-	ibsta = int(C.ibeos(C.int(ud), C.int(v)))
-	return
-}
-
-// Ibeot enables or disables the assertion of the EOI line at the end of
-// write I/O operations for the board or device described by ud.
+// Performs the equivalent of an ibonl 1 to initialize the board or
+// device descriptor. The unit descriptor returned by ibfind remains valid
+// until the board or device is put offline using ibonl 0.
 //
-// If v is non-zero, then EOI is asserted when the last byte of a GPIB
-// write is sent.
-func Ibeot(ud, v int) (ibsta int) {
-	ibsta = int(C.ibeot(C.int(ud), C.int(v)))
+// If ibfind is unable to get a valid descriptor, a is returned; the ERR
+// bit is set in ibsta and iberr contains EDVR.
+func Ibfind(udname string) (ud int) {
+	n := C.CString(udname)
+	defer C.free(unsafe.Pointer(n))
+	ud = int(C.ibfindA(n))
 	return
 }
 
@@ -433,17 +211,12 @@ func Ibeot(ud, v int) (ibsta int) {
 // the GPIB ATN line to be unasserted.
 //
 // v determines whether to perform acceptor handshaking
-func Ibgts(ud, v int) (ibsta int) {
-	ibsta = int(C.ibgts(C.int(ud), C.int(v)))
+func Ibgts(ud, v int) (ibsta uint32) {
+	ibsta = uint32(C.ibgts(C.int(ud), C.int(v)))
 	return
 }
 
-// Ibist sets or clears the board individual status bit for parallel polls.
-func Ibist(ud, v int) (ibsta int) {
-	ibsta = int(C.ibist(C.int(ud), C.int(v)))
-	return
-}
-
+// TODO
 //extern int  iblck    (int ud, int v, unsigned int LockWaitTime, void * Reserved);
 //// Acquire or release an exclusive interface lock
 //func Iblck(ud, v int, LockWaitTime uint, Reserved) int {
@@ -451,8 +224,8 @@ func Ibist(ud, v int) (ibsta int) {
 //}
 
 // Iblines returns the status of the eight GPIB control lines.
-func Iblines(ud int) (ibsta, result int) {
-	ibsta = int(C.iblines(C.int(ud), (*C.short)(unsafe.Pointer(&result))))
+func Iblines(ud int) (ibsta, result uint32) {
+	ibsta = uint32(C.iblines(C.int(ud), (*C.short)(unsafe.Pointer(&result))))
 	return
 }
 
@@ -465,15 +238,15 @@ func Iblines(ud int) (ibsta, result int) {
 // associated with that device to test for Listeners. If a Listener is
 // detected, a non-zero value is returned in listen. If no Listener is
 // found, zero is returned.
-func Ibln(ud, pad, sad int) (ibsta, listen int) {
-	ibsta = int(C.ibln(C.int(ud), C.int(pad), C.int(sad),
+func Ibln(ud, pad, sad int) (ibsta, listen uint32) {
+	ibsta = uint32(C.ibln(C.int(ud), C.int(pad), C.int(sad),
 		(*C.short)(unsafe.Pointer(&listen))))
 	return
 }
 
 // Ibloc places the board in local mode if it is not in a lockout state.
-func Ibloc(ud int) (ibsta int) {
-	ibsta = int(C.ibloc(C.int(ud)))
+func Ibloc(ud int) (ibsta uint32) {
+	ibsta = uint32(C.ibloc(C.int(ud)))
 	return
 }
 
@@ -485,8 +258,8 @@ func Ibloc(ud int) (ibsta int) {
 // specified by mask, and when one or more of the events is true, the
 // Callback is invoked. refData User-defined reference data for the callback.
 // int mycallback(int ud, int ibsta, int iberr, long ibcntl, void *RefData)
-func Ibnotify(ud, mask int, f func(), redData []uint32) (ibsta int) {
-	ibsta = int(C.ibnotify(C.int(ud), C.int(mask),
+func Ibnotify(ud, mask int, f func(), redData []uint32) (ibsta uint32) {
+	ibsta = uint32(C.ibnotify(C.int(ud), C.int(mask),
 		(C.GpibNotifyCallback_t)(unsafe.Pointer(&f)),
 		unsafe.Pointer(&redData[0])))
 	return
@@ -504,20 +277,11 @@ func Ibonl(ud, v int) (ibsta int) {
 	return
 }
 
-// Ibpad changes the primary address.
-//
-// Sets the primary GPIB address of the board or device to v, an
-// integer ranging from 0 to 30.
-func Ibpad(ud, v int) (ibsta int) {
-	ibsta = int(C.ibpad(C.int(ud), C.int(v)))
-	return
-}
-
 // Ibpct passes control to another GPIB device with Controller capability.
 //
 // Passes Controller-in-Charge status to the device indicated by ud.
-func Ibpct(ud int) (ibsta int) {
-	ibsta = int(C.ibpct(C.int(ud)))
+func Ibpct(ud int) (ibsta uint32) {
+	ibsta = uint32(C.ibpct(C.int(ud)))
 	return
 }
 
@@ -525,8 +289,8 @@ func Ibpct(ud int) (ibsta int) {
 //
 // If ud is a device descriptor, ibppc enables or disables the device
 // from responding to parallel polls.
-func Ibppc(ud, v int) (ibsta int) {
-	ibsta = int(C.ibppc(C.int(ud), C.int(v)))
+func Ibppc(ud, v int) (ibsta uint32) {
+	ibsta = uint32(C.ibppc(C.int(ud), C.int(v)))
 	return
 }
 
@@ -535,9 +299,9 @@ func Ibppc(ud, v int) (ibsta int) {
 // If ud is a device descriptor, ibrd addresses the GPIB, reads up to
 // len(buf) bytes of data, and places the data into the buffer specified
 // buf.
-func Ibrd(ud int, buf []byte) (ibsta int) {
-	ibsta = int(C.ibrd(C.int(ud), unsafe.Pointer(&buf[0]),
-		C.long(len(buf))))
+func Ibrd(ud int, buf []byte) (ibsta uint32) {
+	ibsta = uint32(C.ibrd(C.int(ud), unsafe.Pointer(&buf[0]),
+		C.size_g(len(buf))))
 	return
 }
 
@@ -548,42 +312,14 @@ func Ibrd(ud int, buf []byte) (ibsta int) {
 // specifying a device, the GPIB Interface board associated with the device
 // conducts the parallel poll. Note that if the GPIB Interface Board to conduct
 // the parallel poll is not the Controller- In-Charge, an ECIC error is generated.
-func Ibrpp(ud int) (ibsta, resp int) {
-	ibsta = int(C.ibrpp(C.int(ud), (*C.char)(unsafe.Pointer(&resp))))
-	return
-}
-
-// Ibrsc requests or releases system control.
-//
-// Requests or releases the capability to send Interface Clear (IFC)
-// and Remote Enable (REN) messages to devices.
-func Ibrsc(ud, v int) (ibsta int) {
-	ibsta = int(C.ibrsc(C.int(ud), C.int(v)))
+func Ibrpp(ud int) (ibsta, resp uint32) {
+	ibsta = uint32(C.ibrpp(C.int(ud), (*C.char)(unsafe.Pointer(&resp))))
 	return
 }
 
 // Ibrsp conducts a serial poll on the device ud.
-func Ibrsp(ud int) (ibsta, resp int) {
-	ibsta = int(C.ibrsp(C.int(ud), (*C.char)(unsafe.Pointer(&resp))))
-	return
-}
-
-// Ibrsv requests service and change the serial poll status byte.
-//
-// Is used to request service from the Controller and to provide the
-// Controller with an application-dependent status byte when the
-// Controller serial polls the GPIB board.
-func Ibrsv(ud, status int) (ibsta int) {
-	ibsta = int(C.ibrsv(C.int(ud), C.int(status)))
-	return
-}
-
-// Ibsad changes or disables the secondary address.
-
-// Changes the secondary GPIB address of the given board or device
-// to v, an integer in the range 96 to 126 (hex 60 to hex 7E) or zero.
-func Ibsad(ud, v int) (ibsta int) {
-	ibsta = int(C.ibsad(C.int(ud), C.int(v)))
+func Ibrsp(ud int) (ibsta, resp uint32) {
+	ibsta = uint32(C.ibrsp(C.int(ud), (*C.char)(unsafe.Pointer(&resp))))
 	return
 }
 
@@ -591,17 +327,8 @@ func Ibsad(ud, v int) (ibsta int) {
 //
 // Asserts the GPIB interfaces clear (IFC) line for at least 100 ?s
 // if the GPIB board is System Controller.
-func Ibsic(ud int) (ibsta int) {
-	ibsta = int(C.ibsic(C.int(ud)))
-	return
-}
-
-// Ibsre sets or clears the Remote Enable (REN) line.
-
-// If v is non-zero, the GPIB Remote Enable (REN) line is asserted.
-// If v is zero, REN is unasserted.
-func Ibsre(ud, v int) (ibsta int) {
-	ibsta = int(C.ibsre(C.int(ud), C.int(v)))
+func Ibsic(ud int) (ibsta uint32) {
+	ibsta = uint32(C.ibsic(C.int(ud)))
 	return
 }
 
@@ -609,16 +336,8 @@ func Ibsre(ud, v int) (ibsta int) {
 //
 // Aborts any asynchronous read, write, or command operation that is in
 // progress and resynchronizes the application with the driver.
-func Ibstop(ud int) (ibsta int) {
-	ibsta = int(C.ibstop(C.int(ud)))
-	return
-}
-
-// Ibtmo changes or disables the timeout period.
-
-// Sets the timeout period of the board or device to v.
-func Ibtmo(ud, v int) (ibsta int) {
-	ibsta = int(C.ibtmo(C.int(ud), C.int(v)))
+func Ibstop(ud int) (ibsta uint32) {
+	ibsta = uint32(C.ibstop(C.int(ud)))
 	return
 }
 
@@ -626,8 +345,8 @@ func Ibtmo(ud, v int) (ibsta int) {
 //
 // Sends the Group Execute Trigger (GET) message to the device
 // described by ud.
-func Ibtrg(ud int) (ibsta int) {
-	ibsta = int(C.ibtrg(C.int(ud)))
+func Ibtrg(ud int) (ibsta uint32) {
+	ibsta = uint32(C.ibtrg(C.int(ud)))
 	return
 }
 
@@ -635,8 +354,8 @@ func Ibtrg(ud int) (ibsta int) {
 //
 // Monitors the events specified by mask and delays processing until
 // one or more of the events occurs.
-func Ibwait(ud, mask int) (ibsta int) {
-	ibsta = int(C.ibwait(C.int(ud), C.int(mask)))
+func Ibwait(ud, mask int) (ibsta uint32) {
+	ibsta = uint32(C.ibwait(C.int(ud), C.int(mask)))
 	return
 }
 
@@ -647,10 +366,10 @@ func Ibwait(ud, mask int) (ibsta int) {
 // If ud is a board descriptor, ibwrt writes len(buf) bytes of data from the
 // buffer specified by buf to a GPIB device; a board-level ibwrt assumes that
 // the GPIB is already properly addressed.
-func Ibwrt(ud int, buf string) (ibsta int) {
+func Ibwrt(ud int, buf string) (ibsta uint32) {
 	n := C.CString(buf)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = int(C.ibwrt(C.int(ud), unsafe.Pointer(n), C.long(len(buf))))
+	ibsta = uint32(C.ibwrt(C.int(ud), unsafe.Pointer(n), C.size_g(len(buf))))
 	return
 }
 
@@ -661,10 +380,103 @@ func Ibwrt(ud int, buf string) (ibsta int) {
 // If ud is a board descriptor, ibwrt writes len(buf) bytes of data from the
 // buffer specified by buf to a GPIB device; a board-level ibwrt assumes that
 // the GPIB is already properly addressed.
-func Ibwrta(ud int, buf string) (ibsta int) {
+func Ibwrta(ud int, buf string) (ibsta uint32) {
 	n := C.CString(buf)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = int(C.ibwrta(C.int(ud), unsafe.Pointer(n), C.long(len(buf))))
+	ibsta = uint32(C.ibwrta(C.int(ud), unsafe.Pointer(n), C.size_g(len(buf))))
+	return
+}
+
+// Ibwrtf writes data to a device from a file.
+//
+// If ud is a device descriptor, ibwrtf addresses the GPIB and writes all
+// of the bytes from the file filename to a GPIB device. If ud is a board
+// descriptor, ibwrtf writes all of the bytes of data from the file filename
+// to a GPIB device.
+func Ibwrtf(ud int, filename string) (ibsta uint32) {
+	n := C.CString(filename)
+	defer C.free(unsafe.Pointer(n))
+	ibsta = uint32(C.ibwrtfA(C.int(ud), n))
+	return
+}
+
+// Ibdma enables or disables DMA.
+//
+// Enables or disables DMA transfers for the board, according to v.
+// If v is zero, then DMA is not used for GPIB I/O transfers, and if v
+// is non-zero, then DMA is used for GPIB I/O transfers.
+func Ibdma(ud, v int) (ibsta int) {
+	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcDMA), C.int(v)))
+	return
+}
+
+// Ibeot enables or disables the assertion of the EOI line at the end of
+// write I/O operations for the board or device described by ud.
+//
+// If v is non-zero, then EOI is asserted when the last byte of a GPIB
+// write is sent.
+func Ibeot(ud, v int) (ibsta int) {
+	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcEOT), C.int(v)))
+	return
+}
+
+// Ibist sets or clears the board individual status bit for parallel polls.
+func Ibist(ud, v int) (ibsta int) {
+	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcIst), C.int(v)))
+	return
+}
+
+// Ibpad changes the primary address.
+//
+// Sets the primary GPIB address of the board or device to v, an
+// integer ranging from 0 to 30.
+func Ibpad(ud, v int) (ibsta int) {
+	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcPAD), C.int(v)))
+	return
+}
+
+// Ibrsc requests or releases system control.
+//
+// Requests or releases the capability to send Interface Clear (IFC)
+// and Remote Enable (REN) messages to devices.
+func Ibrsc(ud, v int) (ibsta int) {
+	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcSC), C.int(v)))
+	return
+}
+
+// Ibrsv requests service and change the serial poll status byte.
+//
+// Is used to request service from the Controller and to provide the
+// Controller with an application-dependent status byte when the
+// Controller serial polls the GPIB board.
+func Ibrsv(ud, status int) (ibsta int) {
+	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcRsv), C.int(status)))
+	return
+}
+
+// Ibsad changes or disables the secondary address.
+//
+// Changes the secondary GPIB address of the given board or device
+// to v, an integer in the range 96 to 126 (hex 60 to hex 7E) or zero.
+func Ibsad(ud, v int) (ibsta int) {
+	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcSAD), C.int(v)))
+	return
+}
+
+// Ibsre sets or clears the Remote Enable (REN) line.
+//
+// If v is non-zero, the GPIB Remote Enable (REN) line is asserted.
+// If v is zero, REN is unasserted.
+func Ibsre(ud, v int) (ibsta int) {
+	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcSRE), C.int(v)))
+	return
+}
+
+// Ibtmo changes or disables the timeout period.
+//
+// Sets the timeout period of the board or device to v.
+func Ibtmo(ud, v int) (ibsta int) {
+	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcTMO), C.int(v)))
 	return
 }
 
@@ -676,7 +488,7 @@ func Ibwrta(ud int, buf string) (ibsta int) {
 // stores the poll responses in resultlist and the number of responses
 // in ibcntl.
 func AllSpoll(boardID int, addrlist []Addr4882_t) (results []int16) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	results = make([]int16, len(addrlist))
 	C.AllSpoll(C.int(boardID), (*C.Addr4882_t)(&n[0]),
 		(*C.short)(&results[0]))
@@ -699,7 +511,7 @@ func DevClear(boardID, address int) {
 // constant NOADDR, then the Universal Device Clear (DCL) message is sent to
 // all the devices on the bus.
 func DevClearList(boardID int, addrlist []Addr4882_t) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	C.DevClearList(C.int(boardID), (*C.Addr4882_t)(&n[0]))
 }
 
@@ -711,7 +523,7 @@ func DevClearList(boardID int, addrlist []Addr4882_t) {
 // contains only the constant NOADDR, then the Remote Enable (REN) GPIB line
 // is unasserted.
 func EnableLocal(boardID int, addrlist []Addr4882_t) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	C.EnableLocal(C.int(boardID), (*C.Addr4882_t)(&n[0]))
 }
 
@@ -720,7 +532,7 @@ func EnableLocal(boardID int, addrlist []Addr4882_t) {
 // Asserts the Remote Enable (REN) GPIB line. All devices
 // described by addrlist are put into a listen-active state.
 func EnableRemote(boardID int, addrlist []Addr4882_t) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	C.EnableLocal(C.int(boardID), (*C.Addr4882_t)(&n[0]))
 }
 
@@ -733,7 +545,7 @@ func EnableRemote(boardID int, addrlist []Addr4882_t) {
 // stored in results. No more than limit addresses are stored in results.
 // ibcntl contains the actual number of addresses stored in results.
 func FindLstn(boardID, limit int, addrlist []Addr4882_t) (results []Addr4882_t) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	results = make([]Addr4882_t, limit)
 	C.FindLstn(C.int(boardID), (*C.Addr4882_t)(&n[0]),
 		(*C.Addr4882_t)(&results[0]), C.int(limit))
@@ -749,7 +561,7 @@ func FindLstn(boardID, limit int, addrlist []Addr4882_t) (results []Addr4882_t) 
 // the index corresponding to NOADDR in addrlist is returned in ibcntl and
 // ETAB is returned in iberr.
 func FindRQS(boardID int, addrlist []Addr4882_t) (status int16) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	C.FindRQS(C.int(boardID), (*C.Addr4882_t)(&n[0]),
 		(*C.short)(&status))
 	return
@@ -785,7 +597,7 @@ func PPollConfig(boardID, dataLine, lineSense, addr Addr4882_t) {
 // unconfigured by this function do not participate in subsequent parallel polls.
 // boardID The interface board number.
 func PPollUnconfig(boardID int, addrlist []Addr4882_t) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	C.PPollUnconfig(C.int(boardID), (*C.Addr4882_t)(&n[0]))
 }
 
@@ -814,7 +626,7 @@ func PassControl(boardID, addr Addr4882_t) {
 func RcvRespMsg(boardID, count, Termination int) (data []byte) {
 	data = make([]byte, count)
 	C.RcvRespMsg(C.int(boardID), unsafe.Pointer(&data[0]),
-		C.long(count), C.int(Termination))
+		C.size_g(count), C.int(Termination))
 	return
 }
 
@@ -841,7 +653,7 @@ func ReadStatusByte(boardID, addr Addr4882_t) (result int16) {
 func Receive(boardID, count, Termination, addr Addr4882_t) (data []byte) {
 	data = make([]byte, count)
 	C.Receive(C.int(boardID), C.Addr4882_t(addr), unsafe.Pointer(&data[0]),
-		C.long(count), C.int(Termination))
+		C.size_g(count), C.int(Termination))
 	return
 }
 
@@ -865,7 +677,7 @@ func ReceiveSetup(boardID, addr Addr4882_t) {
 // initialization. This step is accomplished by sending the message "*RST\n"
 // to the devices described by addrlist.
 func ResetSys(boardID int, addrlist []Addr4882_t) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	C.ResetSys(C.int(boardID), (*C.Addr4882_t)(&n[0]))
 }
 
@@ -881,7 +693,7 @@ func Send(boardID, eotMode int, addr Addr4882_t, cmds string) {
 	n := C.CString(cmds)
 	defer C.free(unsafe.Pointer(n))
 	C.Send(C.int(boardID), C.Addr4882_t(addr), unsafe.Pointer(n),
-		C.long(len(cmds)), C.int(eotMode))
+		C.size_g(len(cmds)), C.int(eotMode))
 }
 
 // SendCmds sends GPIB command bytes.
@@ -896,7 +708,7 @@ func Send(boardID, eotMode int, addr Addr4882_t, cmds string) {
 func SendCmds(boardID int, cmds string) {
 	n := C.CString(cmds)
 	defer C.free(unsafe.Pointer(n))
-	C.SendCmds(C.int(boardID), unsafe.Pointer(n), C.long(len(cmds)))
+	C.SendCmds(C.int(boardID), unsafe.Pointer(n), C.size_g(len(cmds)))
 }
 
 // SendDataBytes sends cmd bytes to devices that are already addressed to listen.
@@ -914,8 +726,8 @@ func SendCmds(boardID int, cmds string) {
 func SendDataBytes(boardID, eotMode int, cmds string) {
 	n := C.CString(cmds)
 	defer C.free(unsafe.Pointer(n))
-	C.SendDataBytes(C.int(boardID), unsafe.Pointer(n), C.long(len(cmds)),
-        	C.int(eotMode))
+	C.SendDataBytes(C.int(boardID), unsafe.Pointer(n), C.size_g(len(cmds)),
+		C.int(eotMode))
 	return
 }
 
@@ -948,9 +760,9 @@ func SendLLO(boardID int) {
 // the EOI line asserted after the last byte. The actual number of bytes
 // transferred is returned in the global variable, ibcntl.
 func SendList(boardID, count, eotMode int, addrlist []Addr4882_t, data []byte) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	C.SendList(C.int(boardID), (*C.Addr4882_t)(&n[0]),
-		unsafe.Pointer(&data[0]), C.long(count), C.int(eotMode))
+		unsafe.Pointer(&data[0]), C.size_g(count), C.int(eotMode))
 }
 
 // SendSetup sets up devices to receive data in preparation for SendDataBytes.
@@ -960,7 +772,7 @@ func SendList(boardID, count, eotMode int, addrlist []Addr4882_t, data []byte) {
 // SendDataBytes to actually transfer data from the interface board to the
 // devices.
 func SendSetup(boardID int, addrlist []Addr4882_t) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	C.SendSetup(C.int(boardID), (*C.Addr4882_t)(&n[0]))
 }
 
@@ -1000,7 +812,7 @@ func TestSRQ(boardID int) (result int16) {
 // returned. If a device fails to send a response before the timeout period
 // expires, a test result of 1 is reported for it, and the error EABO is returned.
 func TestSys(boardID int, addrlist []Addr4882_t) (results []int16) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	results = make([]int16, len(addrlist))
 	C.TestSys(C.int(boardID), (*C.Addr4882_t)(&n[0]),
 		(*C.short)(&results[0]))
@@ -1023,7 +835,7 @@ func Trigger(boardID int, addr Addr4882_t) {
 // then no addressing is performed and the GET message is sent to all devices
 // that are currently listen-active on the GPIB.
 func TriggerList(boardID int, addrlist []Addr4882_t) {
-        n := append(addrlist, NOADDR)
+	n := append(addrlist, NOADDR)
 	C.TriggerList(C.int(boardID), (*C.Addr4882_t)(&n[0]))
 }
 

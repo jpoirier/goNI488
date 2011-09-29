@@ -1,14 +1,18 @@
 include $(GOROOT)/src/Make.inc
 
-ifneq ($(GOARCH),386)
-$(error Invalid $$GOARCH '$(GOARCH)'; must be a 32-bit package)
+
+CHEADER_VER=v2007
+ifdef v2001
+CGO_CFLAGS=-DV2001 
+CHEADER_VER=v2001
 endif
 TARG=github.com/jpoirier/ni488
 
-CGOFILES=\
-	ni488.go\
-
+CGOFILES:=ni488.go $(CHEADER_VER).go
 
 include $(GOROOT)/src/Make.pkg
+
+
+
 
 

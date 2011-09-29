@@ -15,7 +15,10 @@ http://zone.ni.com/devzone/cda/tut/p/id/5458
 
 Direct download: http://download.ni.com/support/softlib/gpib/
 
-*the gpib driver is 32-bit only
+The Windows installer includes both 32 and 64 bit drivers, as well as, two versions
+of the header file, 2001 and 2007. On OSX the driver is 32 bit only and the 2001
+version of the header file must be used. I've done nothing on Linux yet. :-(
+
 
 Usage
 -----
@@ -23,8 +26,10 @@ See example.go
 
 Compiling
 ---------
-ni488 package: $ make install
-example: $ 8g example.go ; 8l -o example example.8 ; ./example
+To build the ni488 package with the 2007 header file: $ make install
+To build the ni488 package with the 2001 header file: $ make v2001=1 install
+
+To build the example: $ 8g example.go ; 8l -o example example.8 ; ./example
 
 Testing
 -------

@@ -1,0 +1,11 @@
+GOPACKAGE
+{
+        "name": "ni488",
+        "description": "NI488.2 GPIB bindings for Go",
+        "author": "Joseph Poirier",
+        "email": "jdpoirier@gmail.com"
+}
+
+
+
+
