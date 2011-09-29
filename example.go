@@ -101,8 +101,8 @@ func GpibError(dev, brdIndx int, msg string) {
 func main() {
 	var device int = 0
 	var brdIndx int = 0
-	var priAddr int = 18 // instrument address
-	var secAddr int = 0
+	var priAddr int = 20 // instrument address
+	var secAddr int = 96
 	var buffer []byte = make([]byte, 101)
 
 	//--- Init
@@ -146,7 +146,7 @@ func main() {
 	Ibrd(device, buffer) // Read up to 100 bytes from the device
 	if (ThreadIbsta() & ERR) == 0 {
 		fmt.Println("Ibrd success...\n")
-		fmt.Println("buffer: ", buffer)
+		fmt.Printf("buffer: %s", buffer)
 		fmt.Println()
 	} else {
 		GpibError(device, brdIndx, "Ibrd Error")

@@ -31,7 +31,7 @@ package ni488
 #cgo darwin CFLAGS: -I/Library/Frameworks/NI488.framework/Headers
 #cgo darwin LDFLAGS: -framework NI488
 #cgo windows CFLAGS: -I.
-#cgo windows LDFLAGS: -lni4882
+#cgo windows LDFLAGS: -lgpib-32 -LC:/WINDOWS/system32
 #include <stdlib.h>
 #ifdef AMD64
 #define size_g size_t
@@ -45,8 +45,6 @@ import "C"
 import "unsafe"
 
 var PackageVersion string = "v0.2"
-
-type Addr4882_t C.Addr4882_t
 
 //  Functions to access Thread-Specific copies of the GPIB global vars
 
@@ -200,12 +198,12 @@ func Ibdev(boardID, pad, sad, tmo, eot, eos int) (dev int) {
 //
 // If ibfind is unable to get a valid descriptor, a is returned; the ERR
 // bit is set in ibsta and iberr contains EDVR.
-func Ibfind(udname string) (ud int) {
-	n := C.CString(udname)
-	defer C.free(unsafe.Pointer(n))
-	ud = int(C.ibfindA(n))
-	return
-}
+//func Ibfind(udname string) (ud int) {
+//	n := C.CString(udname)
+//	defer C.free(unsafe.Pointer(n))
+//	ud = int(C.ibfind(n))
+//	return
+//}
 
 // Ibgts causes the GPIB board at ud to go to Standby Controller and
 // the GPIB ATN line to be unasserted.
@@ -482,18 +480,20 @@ func Ibtmo(ud, v int) (ibsta int) {
 
 //  NI-488.2 Functions
 
+// XXX: AllSpoll is undefined when linking against ni4882.dll
+//      and gpib-32.dll (32-bit compilation via 8g&8l)
 // AllSpoll performs a serial poll on all devices.
 //
 // Serial polls all of the devices described by addrlist. It
 // stores the poll responses in resultlist and the number of responses
 // in ibcntl.
-func AllSpoll(boardID int, addrlist []Addr4882_t) (results []int16) {
-	n := append(addrlist, NOADDR)
-	results = make([]int16, len(addrlist))
-	C.AllSpoll(C.int(boardID), (*C.Addr4882_t)(&n[0]),
-		(*C.short)(&results[0]))
-	return
-}
+//func AllSpoll(boardID int, addrlist []int16) (results []int16) {
+//	n := append(addrlist, NOADDR)
+//	results = make([]int16, len(addrlist))
+//	C.AllSpoll(C.int(boardID), (*C.short)(&n[0]),
+//		(*C.short)(&results[0]))
+//	return
+//}
 
 // DevClear clears a single device.
 //
@@ -501,7 +501,7 @@ func AllSpoll(boardID int, addrlist []Addr4882_t) (results []int16) {
 // described by address. If address is the constant NOADDR, then the Universal
 // Device Clear (DCL) message is sent to all devices.
 func DevClear(boardID, address int) {
-	C.DevClear(C.int(boardID), C.Addr4882_t(address))
+	C.DevClear(C.int(boardID), C.short(address))
 }
 
 // DevClearList clears multiple devices.
@@ -510,9 +510,9 @@ func DevClear(boardID, address int) {
 // the device addresses described by addrlist. If addrlist contains only the
 // constant NOADDR, then the Universal Device Clear (DCL) message is sent to
 // all the devices on the bus.
-func DevClearList(boardID int, addrlist []Addr4882_t) {
+func DevClearList(boardID int, addrlist []int16) {
 	n := append(addrlist, NOADDR)
-	C.DevClearList(C.int(boardID), (*C.Addr4882_t)(&n[0]))
+	C.DevClearList(C.int(boardID), (*C.short)(&n[0]))
 }
 
 // EnableLocal enables operations from the front panel of devices (leave
@@ -522,18 +522,18 @@ func DevClearList(boardID int, addrlist []Addr4882_t) {
 // described by addrlist. This places the devices into local mode. If addrlist
 // contains only the constant NOADDR, then the Remote Enable (REN) GPIB line
 // is unasserted.
-func EnableLocal(boardID int, addrlist []Addr4882_t) {
+func EnableLocal(boardID int, addrlist []int16) {
 	n := append(addrlist, NOADDR)
-	C.EnableLocal(C.int(boardID), (*C.Addr4882_t)(&n[0]))
+	C.EnableLocal(C.int(boardID), (*C.short)(&n[0]))
 }
 
 // EnableRemote enables a remote GPIB programming for devices.
 //
 // Asserts the Remote Enable (REN) GPIB line. All devices
 // described by addrlist are put into a listen-active state.
-func EnableRemote(boardID int, addrlist []Addr4882_t) {
+func EnableRemote(boardID int, addrlist []int16) {
 	n := append(addrlist, NOADDR)
-	C.EnableLocal(C.int(boardID), (*C.Addr4882_t)(&n[0]))
+	C.EnableLocal(C.int(boardID), (*C.short)(&n[0]))
 }
 
 // FindLstn finds listening devices on GPIB.
@@ -544,11 +544,11 @@ func EnableRemote(boardID int, addrlist []Addr4882_t) {
 // primary address are tested, and the addresses of any devices found are
 // stored in results. No more than limit addresses are stored in results.
 // ibcntl contains the actual number of addresses stored in results.
-func FindLstn(boardID, limit int, addrlist []Addr4882_t) (results []Addr4882_t) {
+func FindLstn(boardID, limit int, addrlist []int16) (results []int16) {
 	n := append(addrlist, NOADDR)
-	results = make([]Addr4882_t, limit)
-	C.FindLstn(C.int(boardID), (*C.Addr4882_t)(&n[0]),
-		(*C.Addr4882_t)(&results[0]), C.int(limit))
+	results = make([]int16, limit)
+	C.FindLstn(C.int(boardID), (*C.short)(&n[0]),
+		(*C.short)(&results[0]), C.int(limit))
 	return
 }
 
@@ -560,9 +560,9 @@ func FindLstn(boardID, limit int, addrlist []Addr4882_t) (results []Addr4882_t) 
 // service in addrlist. If none of the devices are requesting service, then
 // the index corresponding to NOADDR in addrlist is returned in ibcntl and
 // ETAB is returned in iberr.
-func FindRQS(boardID int, addrlist []Addr4882_t) (status int16) {
+func FindRQS(boardID int, addrlist []int16) (status int16) {
 	n := append(addrlist, NOADDR)
-	C.FindRQS(C.int(boardID), (*C.Addr4882_t)(&n[0]),
+	C.FindRQS(C.int(boardID), (*C.short)(&n[0]),
 		(*C.short)(&status))
 	return
 }
@@ -584,8 +584,8 @@ func PPoll(boardID int) (status int16) {
 // lineSense equals the individual status (ist) bit of the device, then the
 // assigned GPIB data line is asserted during a parallel poll, otherwise, the
 // data line is not asserted during a parallel poll.
-func PPollConfig(boardID, dataLine, lineSense, addr Addr4882_t) {
-	C.PPollConfig(C.int(boardID), C.Addr4882_t(addr),
+func PPollConfig(boardID, dataLine, lineSense, addr int16) {
+	C.PPollConfig(C.int(boardID), C.short(addr),
 		C.int(dataLine), C.int(lineSense))
 }
 
@@ -596,9 +596,9 @@ func PPollConfig(boardID, dataLine, lineSense, addr Addr4882_t) {
 // Unconfigure (PPU) GPIB message is sent to all GPIB devices. The devices
 // unconfigured by this function do not participate in subsequent parallel polls.
 // boardID The interface board number.
-func PPollUnconfig(boardID int, addrlist []Addr4882_t) {
+func PPollUnconfig(boardID int, addrlist []int16) {
 	n := append(addrlist, NOADDR)
-	C.PPollUnconfig(C.int(boardID), (*C.Addr4882_t)(&n[0]))
+	C.PPollUnconfig(C.int(boardID), (*C.short)(&n[0]))
 }
 
 // PassControl passes control to another device with Controller capability.
@@ -606,8 +606,8 @@ func PPollUnconfig(boardID int, addrlist []Addr4882_t) {
 // Sends the Take Control (TCT) GPIB message to the device
 // described by addr. The device becomes Controller-In-Charge and the
 // interface board is no longer CIC.
-func PassControl(boardID, addr Addr4882_t) {
-	C.PassControl(C.int(boardID), C.Addr4882_t(addr))
+func PassControl(boardID, addr int16) {
+	C.PassControl(C.int(boardID), C.short(addr))
 }
 
 // RcvRespMsg reads data bytes from a device that is already addressed to talk.
@@ -634,8 +634,8 @@ func RcvRespMsg(boardID, count, Termination int) (data []byte) {
 //
 // Serial polls the device described by addr. The response
 // byte is stored in result.
-func ReadStatusByte(boardID, addr Addr4882_t) (result int16) {
-	C.ReadStatusByte(C.int(boardID), C.Addr4882_t(addr),
+func ReadStatusByte(boardID, addr int16) (result int16) {
+	C.ReadStatusByte(C.int(boardID), C.short(addr),
 		(*C.short)(&result))
 	return
 }
@@ -650,9 +650,9 @@ func ReadStatusByte(boardID, addr Addr4882_t) (result int16) {
 // Otherwise, the read is stopped when an 8-bit EOS character is detected.
 // The actual number of bytes transferred is returned in the global variable,
 // ibcntl.
-func Receive(boardID, count, Termination, addr Addr4882_t) (data []byte) {
+func Receive(boardID, count, Termination, addr int16) (data []byte) {
 	data = make([]byte, count)
-	C.Receive(C.int(boardID), C.Addr4882_t(addr), unsafe.Pointer(&data[0]),
+	C.Receive(C.int(boardID), C.short(addr), unsafe.Pointer(&data[0]),
 		C.size_g(count), C.int(Termination))
 	return
 }
@@ -663,8 +663,8 @@ func Receive(boardID, count, Termination, addr Addr4882_t) (data []byte) {
 // Makes the device described by addr talk-active, and makes
 // the interface board listen-active. This call is usually followed by a call
 // to RcvRespMsg to transfer data from the device to the interface board.
-func ReceiveSetup(boardID, addr Addr4882_t) {
-	C.ReceiveSetup(C.int(boardID), C.Addr4882_t(addr))
+func ReceiveSetup(boardID, addr int16) {
+	C.ReceiveSetup(C.int(boardID), C.short(addr))
 }
 
 // ResetSys resets and initializes IEEE 488.2-compliant devices.
@@ -676,9 +676,9 @@ func ReceiveSetup(boardID, addr Addr4882_t) {
 // causes IEEE 488.2-compliant devices to perform device-specific reset and
 // initialization. This step is accomplished by sending the message "*RST\n"
 // to the devices described by addrlist.
-func ResetSys(boardID int, addrlist []Addr4882_t) {
+func ResetSys(boardID int, addrlist []int16) {
 	n := append(addrlist, NOADDR)
-	C.ResetSys(C.int(boardID), (*C.Addr4882_t)(&n[0]))
+	C.ResetSys(C.int(boardID), (*C.short)(&n[0]))
 }
 
 // Send sends data bytes to a device.
@@ -689,10 +689,10 @@ func ResetSys(boardID int, addrlist []Addr4882_t) {
 // NULLend. If eotmode is NLend then a new line character ('\n') is sent with
 // the EOI line asserted after the last byte of buffer. The actual number of
 // bytes transferred is returned in the global variable, ibcntl.
-func Send(boardID, eotMode int, addr Addr4882_t, cmds string) {
+func Send(boardID, eotMode int, addr int16, cmds string) {
 	n := C.CString(cmds)
 	defer C.free(unsafe.Pointer(n))
-	C.Send(C.int(boardID), C.Addr4882_t(addr), unsafe.Pointer(n),
+	C.Send(C.int(boardID), C.short(addr), unsafe.Pointer(n),
 		C.size_g(len(cmds)), C.int(eotMode))
 }
 
@@ -759,9 +759,9 @@ func SendLLO(boardID int) {
 // NULLend. If eotMode is NLend, then a new line character ('\n') is sent with
 // the EOI line asserted after the last byte. The actual number of bytes
 // transferred is returned in the global variable, ibcntl.
-func SendList(boardID, count, eotMode int, addrlist []Addr4882_t, data []byte) {
+func SendList(boardID, count, eotMode int, addrlist []int16, data []byte) {
 	n := append(addrlist, NOADDR)
-	C.SendList(C.int(boardID), (*C.Addr4882_t)(&n[0]),
+	C.SendList(C.int(boardID), (*C.short)(&n[0]),
 		unsafe.Pointer(&data[0]), C.size_g(count), C.int(eotMode))
 }
 
@@ -771,9 +771,9 @@ func SendList(boardID, count, eotMode int, addrlist []Addr4882_t, data []byte) {
 // the interface board talk-active. This call is usually followed by
 // SendDataBytes to actually transfer data from the interface board to the
 // devices.
-func SendSetup(boardID int, addrlist []Addr4882_t) {
+func SendSetup(boardID int, addrlist []int16) {
 	n := append(addrlist, NOADDR)
-	C.SendSetup(C.int(boardID), (*C.Addr4882_t)(&n[0]))
+	C.SendSetup(C.int(boardID), (*C.short)(&n[0]))
 }
 
 // SetRWLS places devices in remote with lockout state.
@@ -783,9 +783,9 @@ func SendSetup(boardID int, addrlist []Addr4882_t) {
 // in lockout state by the Local Lockout (LLO) GPIB message. You cannot program
 // those devices locally until the Controller-In-Charge releases the Local
 // Lockout by way of the EnableLocal NI-488.2 routine.
-func SetRWLS(boardID int, addrlist []Addr4882_t) {
+func SetRWLS(boardID int, addrlist []int16) {
 	n := append(addrlist, NOADDR)
-	C.SetRWLS(C.int(boardID), (*C.Addr4882_t)(&n[0]))
+	C.SetRWLS(C.int(boardID), (*C.short)(&n[0]))
 }
 
 // TestSRQ determines the current state of the GPIB Service Request (SRQ) line.
@@ -811,10 +811,10 @@ func TestSRQ(boardID int) (result int16) {
 // devices that failed. Otherwise, the meaning of ibcntl depends on the error
 // returned. If a device fails to send a response before the timeout period
 // expires, a test result of 1 is reported for it, and the error EABO is returned.
-func TestSys(boardID int, addrlist []Addr4882_t) (results []int16) {
+func TestSys(boardID int, addrlist []int16) (results []int16) {
 	n := append(addrlist, NOADDR)
 	results = make([]int16, len(addrlist))
-	C.TestSys(C.int(boardID), (*C.Addr4882_t)(&n[0]),
+	C.TestSys(C.int(boardID), (*C.short)(&n[0]),
 		(*C.short)(&results[0]))
 	return
 }
@@ -824,8 +824,8 @@ func TestSys(boardID int, addrlist []Addr4882_t) (results []int16) {
 // Sends the Group Execute Trigger (GET) GPIB message to the device
 // described by addr. If address is the constant NOADDR, then the GET message
 // is sent to all devices that are currently listen-active on the GPIB.
-func Trigger(boardID int, addr Addr4882_t) {
-	C.Trigger(C.int(boardID), C.Addr4882_t(addr))
+func Trigger(boardID int, addr int16) {
+	C.Trigger(C.int(boardID), C.short(addr))
 }
 
 // TriggerList triggers multiple devices.
@@ -834,9 +834,9 @@ func Trigger(boardID int, addr Addr4882_t) {
 // described by addrlist. If the only address in addrlist is the constant NOADDR,
 // then no addressing is performed and the GET message is sent to all devices
 // that are currently listen-active on the GPIB.
-func TriggerList(boardID int, addrlist []Addr4882_t) {
+func TriggerList(boardID int, addrlist []int16) {
 	n := append(addrlist, NOADDR)
-	C.TriggerList(C.int(boardID), (*C.Addr4882_t)(&n[0]))
+	C.TriggerList(C.int(boardID), (*C.short)(&n[0]))
 }
 
 // WaitSRQ waita until a device asserts the GPIB Service Request (SRQ) line.

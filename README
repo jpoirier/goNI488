@@ -48,6 +48,11 @@ Testing
 My Misc Notes
 -=-=-=-=-=-=-=-=-
 
+9-30-2011: 
+Windows: 32-bit compiling, AllSpoll is undefined when linking against either
+ni4882.dll & gpib-32.dll. 
+
+
 --- OSX info ---
 Method 1: Startup key combination (for current startup only)
 
