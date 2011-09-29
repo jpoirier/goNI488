@@ -31,14 +31,14 @@ package ni488
 #cgo darwin CFLAGS: -I/Library/Frameworks/NI488.framework/Headers
 #cgo darwin LDFLAGS: -framework NI488
 #cgo windows CFLAGS: -I.
-#cgo windows LDFLAGS: -LC:/WINDOWS/system32 -lgpib-32
+#cgo windows LDFLAGS: -lni4882
 #include <stdlib.h>
-#ifdef V2001
-#define size_g long
-#include <ni488.h>
-#else
+#ifdef AMD64
 #define size_g size_t
 #include <ni4882.h>
+#else
+#define size_g long
+#include <ni488.h>
 #endif
 */
 import "C"

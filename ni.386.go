@@ -1,13 +1,13 @@
 package ni488
 
 /*
-#cgo linux LDFLAGS: -lgpibapi
+#cgo darwin CFLAGS: -I/Library/Frameworks/NI488.framework/Headers
 #cgo windows CFLAGS: -I.
-#cgo windows LDFLAGS: -LC:/WINDOWS/system32 -lgpib-32
 #include <stdlib.h>
-#include <ni4882.h>
+#include <ni488.h>
 */
 import "C"
+import "unsafe"
 
 const (
 	UNL = C.UNL // GPIB unlisten command
@@ -110,6 +110,8 @@ const (
 	IbcREADDR         = C.IbcREADDR         // Repeat Addressing
 	IbcAUTOPOLL       = C.IbcAUTOPOLL       // Disable Auto Serial Polling
 	IbcCICPROT        = C.IbcCICPROT        // Use the CIC Protocol?
+	IbcIRQ            = C.IbcIRQ            // Use PIO for I/O
+	IbcSC             = C.IbcSC             // Board is System Controller?
 	IbcSRE            = C.IbcSRE            // Assert SRE on device calls?
 	IbcEOSrd          = C.IbcEOSrd          // Terminate reads on EOS
 	IbcEOSwrt         = C.IbcEOSwrt         // Send EOI with EOS character
@@ -118,11 +120,15 @@ const (
 	IbcPP2            = C.IbcPP2            // Use Parallel Poll Mode 2.
 	IbcTIMING         = C.IbcTIMING         // NORMAL, HIGH, or VERY_HIGH timing.
 	IbcDMA            = C.IbcDMA            // Use DMA for I/O
+	IbcReadAdjust     = C.IbcReadAdjust     // Swap bytes during an ibrd.
+	IbcWriteAdjust    = C.IbcWriteAdjust    // Swap bytes during an ibwrt.
 	IbcSendLLO        = C.IbcSendLLO        // Enable/disable the sending of LLO.
 	IbcSPollTime      = C.IbcSPollTime      // Set the timeout value for serial polls.
 	IbcPPollTime      = C.IbcPPollTime      // Set the parallel poll length period.
 	IbcEndBitIsNormal = C.IbcEndBitIsNormal // Remove EOS from END bit of IBSTA.
 	IbcUnAddr         = C.IbcUnAddr         // Enable/disable device unaddressing.
+	IbcSignalNumber   = C.IbcSignalNumber   // Set UNIX signal number - unsupported
+	IbcBlockIfLocked  = C.IbcBlockIfLocked  // Enable/disable blocking for locked boards/
 	IbcHSCableLength  = C.IbcHSCableLength  // Length of cable specified for high speed t
 	IbcIst            = C.IbcIst            // Set the IST bit.
 	IbcRsv            = C.IbcRsv            // Set the RSV byte.
@@ -137,6 +143,8 @@ const (
 	IbaPPC            = C.IbaPPC
 	IbaREADDR         = C.IbaREADDR
 	IbaAUTOPOLL       = C.IbaAUTOPOLL
+	IbaCICPROT        = C.IbaCICPROT
+	IbaIRQ            = C.IbaIRQ
 	IbaSC             = C.IbaSC
 	IbaSRE            = C.IbaSRE
 	IbaEOSrd          = C.IbaEOSrd
@@ -146,17 +154,20 @@ const (
 	IbaPP2            = C.IbaPP2
 	IbaTIMING         = C.IbaTIMING
 	IbaDMA            = C.IbaDMA
+	IbaReadAdjust     = C.IbaReadAdjust
+	IbaWriteAdjust    = C.IbaWriteAdjust
 	IbaSendLLO        = C.IbaSendLLO
 	IbaSPollTime      = C.IbaSPollTime
 	IbaPPollTime      = C.IbaPPollTime
 	IbaEndBitIsNormal = C.IbaEndBitIsNormal
 	IbaUnAddr         = C.IbaUnAddr
+	IbaSignalNumber   = C.IbaSignalNumber
+	IbaBlockIfLocked  = C.IbaBlockIfLocked
 	IbaHSCableLength  = C.IbaHSCableLength
 	IbaIst            = C.IbaIst
 	IbaRsv            = C.IbaRsv
 	IbaLON            = C.IbaLON
 	IbaSerialNumber   = C.IbaSerialNumber
-	IbaEOS            = C.IbcEOS
 	IbaBNA            = C.IbaBNA // A device's access board.
 
 	// Values used by the Send 488.2 command.
@@ -170,37 +181,36 @@ const (
 	// Terminates an address list
 	NOADDR = C.NOADDR
 
-	ValidEOI  = C.ValidEOI
-	ValidATNV = C.ValidATN
-	ValidSRQ  = C.ValidSRQ
-	ValidREN  = C.ValidREN
-	ValidIFC  = C.ValidIFC
-	ValidNRFD = C.ValidNRFD
-	ValidNDAC = C.ValidNDAC
-	ValidDAV  = C.ValidDAV
-	BusEOI    = C.BusEOI
-	BusATN    = C.BusAT
-	BusSRQ    = C.BusSRQ
-	BusREN    = C.BusREN
-	BusIFC    = C.BusIFC
-	BusNRFD   = C.BusNRFD
-	BusNDAC   = C.BusNDAC
-	BusDAV    = C.BusDAV
+	ValidEOI                 = C.ValidEOI
+	ValidATNV                = C.ValidATN
+	ValidSRQ                 = C.ValidSRQ
+	ValidREN                 = C.ValidREN
+	ValidIFC                 = C.ValidIFC
+	ValidNRFD                = C.ValidNRFD
+	ValidNDAC                = C.ValidNDAC
+	ValidDAV                 = C.ValidDAV
+	BusEOI                   = C.BusEOI
+	BusSRQ                   = C.BusSRQ
+	BusREN                   = C.BusREN
+	BusIFC                   = C.BusIFC
+	BusNRFD                  = C.BusNRFD
+	BusNDAC                  = C.BusNDAC
+	BusDAV                   = C.BusDAV
+	TIMMEDIATE               = C.TIMMEDIATE
+	TINFINITE                = C.TINFINITE
+	MAX_LOCKSHARENAME_LENGTH = C.MAX_LOCKSHARENAME_LENGTH
 )
 
+// Ibbn assigns the device described by ud to the access board described by
+// bname.
 //
-// Function to access process-wide GPIB global variables
-//
-func Ibsta() (ibsta uint32) {
-	return uint32(C.Ibsta())
-}
-
-func Iberr() (iberr uint32) {
-	return uint32(C.Iberr())
-}
-
-func Ibcnt() (ibcnt uint32) {
-	return uint32(C.Ibcnt())
+// All subsequent bus activity with device ud occurs through the access board
+// bname. If the call succeeds iberr contains the previous access board index.
+func Ibbn(ud int, udname string) (ibsta int) {
+	n := C.CString(udname)
+	defer C.free(unsafe.Pointer(n))
+	ibsta = int(C.ibbnaA(C.int(ud), n))
+	return
 }
 
 // Ibeos configures the EOS termination mode or EOS character for the board
@@ -211,6 +221,6 @@ func Ibcnt() (ibcnt uint32) {
 // disabled. Otherwise, the low byte is the EOS character and the upper
 // byte contains flags which define the EOS mode.
 func Ibeos(ud, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcEOS), C.int(v)))
+	ibsta = int(C.ibeos(C.int(ud), C.int(v)))
 	return
 }
