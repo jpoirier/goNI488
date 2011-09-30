@@ -7,7 +7,7 @@ Package ni488 wraps National Instruments NI488.2 General Purpose Interface Bus
 enabled piece of test equipment remotely and/or programmatically. NI-488.2 is an
 industry standard for GPIB communications.
 
-A short list of some GPIB enabled test equipment:
+Some GPIB types of test equipment:
 Digital Multimeter
 Power Supplies
 Universal Radio Communications Testers
@@ -43,7 +43,7 @@ Drivers:
      Caveats
 -=-=-=-=-=-=-=-=-
 
-- Only the 32-bit interface has been tested. 
+Only tested against the 32-bit driver so far. 
 
 
 -=-=-=-=-=-=-=-=-
@@ -57,10 +57,10 @@ See example.go.
    Compiling
 -=-=-=-=-=-=-=-=-
 
-Set cgo's LDFLAGS, top of ni488.go/ni.386.go/ni.amd64.go, for your environment. 
+Set cgo's LDFLAGS-top of ni488.go/ni.386.go/ni.amd64.go-for your environment. 
 
 Note that cgo doesn't currently handle Windows paths so you'll need to copy 
-the NI DLL (gpib-32.dll or ni4882.dll) into the package's build directory then
+the NI DLL (gpib-32.dll or ni4882.dll) into the package's build directory, then
 set "-L./" in LDFLAGS. See the CL here http://codereview.appspot.com/5154042/ 
   
 To build the package: $ make install
@@ -77,8 +77,7 @@ To build the example: $ 8g example.go ; 8l -o example example.8 ; ./example
 -=-=-=-=-=-=-=-=-
 
 9-30-2011: 
-Windows: 32-bit compiling, AllSpoll is undefined when linking against ni4882.dll
-and gpib-32.dll. 
+Windows: when compiling on 32-bit platforms AllSpoll is undefined. 
 
 
 --- OSX info ---
