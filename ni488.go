@@ -28,7 +28,7 @@ package ni488
 
 /*
 #cgo linux LDFLAGS: -lgpibapi
-#cgo darwin CFLAGS: -I/Library/Frameworks/NI488.framework/Headers
+#cgo darwin CFLAGS: -I.
 #cgo darwin LDFLAGS: -framework NI488
 #cgo windows CFLAGS: -I.
 #cgo windows LDFLAGS: -lgpib-32 -LC:/WINDOWS/system32
@@ -44,7 +44,19 @@ package ni488
 import "C"
 import "unsafe"
 
-var PackageVersion string = "v0.2"
+var PackageVersion string = "v0.3"
+
+// GetPad extracts and returns the primary instrument
+// address from a base instrument address.
+func GetPad(addr uint16) int {
+	return int(addr & 0xFF)
+}
+
+// GetSad extracts and returns the secondary instrument
+// address from a base instrument address.
+func GetSad(addr uint16) int {
+	return int(((addr) >> 8) & 0xFF)
+}
 
 //  Functions to access Thread-Specific copies of the GPIB global vars
 
@@ -113,7 +125,7 @@ func Ibrdf(ud int, filename string) (ibsta uint32) {
 // specified board or device.
 //
 // The current value of the selected configuration item is returned in v.
-func Ibask(ud, option int) (ibsta, v uint32) {
+func Ibask(ud, option int) (v, ibsta uint32) {
 	ibsta = uint32(C.ibask(C.int(ud), C.int(option),
 		(*C.int)(unsafe.Pointer(&v))))
 	return
@@ -196,14 +208,14 @@ func Ibdev(boardID, pad, sad, tmo, eot, eos int) (dev int) {
 // device descriptor. The unit descriptor returned by ibfind remains valid
 // until the board or device is put offline using ibonl 0.
 //
-// If ibfind is unable to get a valid descriptor, a is returned; the ERR
+// If ibfind is unable to get a valid descriptor, a -1 is returned; the ERR
 // bit is set in ibsta and iberr contains EDVR.
-//func Ibfind(udname string) (ud int) {
-//	n := C.CString(udname)
-//	defer C.free(unsafe.Pointer(n))
-//	ud = int(C.ibfind(n))
-//	return
-//}
+func Ibfind(udname string) (ud int) {
+	n := C.CString(udname)
+	defer C.free(unsafe.Pointer(n))
+	ud = int(C.ibfindA(n))
+	return
+}
 
 // Ibgts causes the GPIB board at ud to go to Standby Controller and
 // the GPIB ATN line to be unasserted.
@@ -323,7 +335,7 @@ func Ibrsp(ud int) (ibsta, resp uint32) {
 
 // Ibsic asserts an interface clear.
 //
-// Asserts the GPIB interfaces clear (IFC) line for at least 100 ?s
+// Asserts the GPIB interfaces clear (IFC) line for at least 100s
 // if the GPIB board is System Controller.
 func Ibsic(ud int) (ibsta uint32) {
 	ibsta = uint32(C.ibsic(C.int(ud)))
@@ -540,11 +552,11 @@ func EnableRemote(boardID int, addrlist []int16) {
 //
 // Tests all of the primary addresses in addrlist as follows: If a
 // device is present at a primary address given in addrlist, then the primary
-// address is stored in results Otherwise, all secondary addresses of the
+// address is stored in results, otherwise, all secondary addresses of the
 // primary address are tested, and the addresses of any devices found are
 // stored in results. No more than limit addresses are stored in results.
 // ibcntl contains the actual number of addresses stored in results.
-func FindLstn(boardID, limit int, addrlist []int16) (results []int16) {
+func FindLstn(boardID int, addrlist []int16, limit int) (results []int16) {
 	n := append(addrlist, NOADDR)
 	results = make([]int16, limit)
 	C.FindLstn(C.int(boardID), (*C.short)(&n[0]),
@@ -560,8 +572,8 @@ func FindLstn(boardID, limit int, addrlist []int16) (results []int16) {
 // service in addrlist. If none of the devices are requesting service, then
 // the index corresponding to NOADDR in addrlist is returned in ibcntl and
 // ETAB is returned in iberr.
-func FindRQS(boardID int, addrlist []int16) (status int16) {
-	n := append(addrlist, NOADDR)
+func FindRQS(boardID int, padList []int16) (status int16) {
+	n := append(padList, NOADDR)
 	C.FindRQS(C.int(boardID), (*C.short)(&n[0]),
 		(*C.short)(&status))
 	return

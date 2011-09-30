@@ -2,7 +2,7 @@ package ni488
 
 /*
 #cgo linux LDFLAGS: -lgpibapi
-#cgo darwin CFLAGS: -I/Library/Frameworks/NI488.framework/Headers
+#cgo darwin CFLAGS: -I.
 #cgo darwin LDFLAGS: -framework NI488
 #cgo windows CFLAGS: -I.
 #cgo windows LDFLAGS: -lgpib-32 -LC:/WINDOWS/system32
@@ -11,7 +11,6 @@ package ni488
 */
 import "C"
 import "unsafe"
-
 
 const (
 	UNL = C.UNL // GPIB unlisten command
