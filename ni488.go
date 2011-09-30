@@ -494,6 +494,7 @@ func Ibtmo(ud, v int) (ibsta int) {
 
 // XXX: AllSpoll is undefined when linking against ni4882.dll
 //      and gpib-32.dll (32-bit compilation via 8g&8l)
+
 // AllSpoll performs a serial poll on all devices.
 //
 // Serial polls all of the devices described by addrlist. It

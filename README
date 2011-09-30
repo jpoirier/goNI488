@@ -1,10 +1,22 @@
 -=-=-=-=-=-=-=-=-
-Description
+  Description
 -=-=-=-=-=-=-=-=-
 
-Package ni488 is a wrapper around the NI-488.2 GPIB driver: it allows an
-application to communicate with GPIB enabled test equipment. NI-488.2 is an
+Package ni488 wraps National Instruments NI488.2 General Purpose Interface Bus
+(GPIB) driver. The driver allows a client application to communicate with a GPIB
+enabled piece of test equipment remotely and/or programmatically. NI-488.2 is an
 industry standard for GPIB communications.
+
+A short list of some GPIB enabled test equipment:
+Digital Multimeter
+Power Supplies
+Universal Radio Communications Testers
+Signal Generators
+Spectrum Analyzers
+Thermal Chambers
+Network Analyzers
+Oscilloscopes
+
 
 Lots of miscellaneous NI-488.2 information:
     http://sine.ni.com/psp/app/doc/p/id/psp-356
@@ -20,37 +32,53 @@ Direct download:
 
 Drivers:
 
-    Windows - 32-bit DLL's are compiled against ni488.h and the 64-bit version
-    against ni4882.h.
+    - Windows  On 32-bit platforms, the DLL's (gpib-32.dll or ni4882.dll)
+      are compiled against ni488.h and 64-bit platforms against ni4882.h.
 
-    OSX - 32-bit library compiled against ni488.h. 
+    - OSX  32-bit library only and compiled against ni488.h. 
 
-    Linux - Nothing on Linux yet. :-(
-
--=-=-=-=-=-=-=-=-
-Usage
--=-=-=-=-=-=-=-=-
-
-See example.go
+    - Linux  Nothing on Linux yet. :-(
 
 -=-=-=-=-=-=-=-=-
-Compiling
+     Caveats
 -=-=-=-=-=-=-=-=-
 
-To build the ni488 package: $ make install
+- Only the 32-bit interface has been tested. 
+
+
+-=-=-=-=-=-=-=-=-
+     Usage
+-=-=-=-=-=-=-=-=-
+
+See example.go.
+
+
+-=-=-=-=-=-=-=-=-
+   Compiling
+-=-=-=-=-=-=-=-=-
+
+Set cgo's LDFLAGS, top of ni488.go/ni.386.go/ni.amd64.go, for your environment. 
+
+Note that cgo doesn't currently handle Windows paths so you'll need to copy 
+the NI DLL (gpib-32.dll or ni4882.dll) into the package's build directory then
+set "-L./" in LDFLAGS. See the CL here http://codereview.appspot.com/5154042/ 
+  
+To build the package: $ make install
 To build the example: $ 8g example.go ; 8l -o example example.8 ; ./example
 
--=-=-=-=-=-=-=-=-
-Testing
--=-=-=-=-=-=-=-=-
 
 -=-=-=-=-=-=-=-=-
-My Misc Notes
+    Testing
+-=-=-=-=-=-=-=-=-
+
+
+-=-=-=-=-=-=-=-=-
+  My Misc Notes
 -=-=-=-=-=-=-=-=-
 
 9-30-2011: 
-Windows: 32-bit compiling, AllSpoll is undefined when linking against either
-ni4882.dll & gpib-32.dll. 
+Windows: 32-bit compiling, AllSpoll is undefined when linking against ni4882.dll
+and gpib-32.dll. 
 
 
 --- OSX info ---
