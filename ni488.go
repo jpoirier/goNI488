@@ -2,9 +2,9 @@
 // Distributable under the terms of The New BSD License
 // that can be found in the LICENSE file.
 
-// Package ni488 wraps National Instruments NI488.2 General Purpose Interface
-// Bus (GPIB) driver. The driver allows a client application to communicate with
-//  a GPIB enabled piece of test equipment remotely and/or programmatically.
+// Package ni488 wraps National Instruments 488.2 General Purpose Interface
+// Bus (GPIB) driver. The driver allows a client application to communicate
+// with a GPIB enabled piece of test equipment remotely and/or programmatically.
 // NI-488.2 is an industry standard for GPIB communications.
 //
 // The package is low level and, for the most part, is one-to-one with the
