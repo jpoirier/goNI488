@@ -7,7 +7,7 @@ Package ni488 wraps National Instruments NI488.2 General Purpose Interface Bus
 enabled piece of test equipment remotely and/or programmatically. NI-488.2 is an
 industry standard for GPIB communications.
 
-Some GPIB types of test equipment:
+Common test equipment with GPIB interfaces:
 Digital Multimeter
 Power Supplies
 Universal Radio Communications Testers
