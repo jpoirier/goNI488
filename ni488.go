@@ -45,7 +45,7 @@ package ni488
 import "C"
 import "unsafe"
 
-var PackageVersion string = "v0.3"
+var PackageVersion string = "v0.4"
 
 // GetPad extracts and returns the primary instrument
 // address from a base instrument address.

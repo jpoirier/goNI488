@@ -107,7 +107,7 @@ const (
 	IbcPPC            = C.IbcPPC            // Parallel Poll Configure
 	IbcREADDR         = C.IbcREADDR         // Repeat Addressing
 	IbcAUTOPOLL       = C.IbcAUTOPOLL       // Disable Auto Serial Polling
-	IbcCICPROT        = C.IbcCICPROT        // Use the CIC Protocol?
+/*	IbcCICPROT        = C.IbcCICPROT        // Use the CIC Protocol? */
 	IbcSRE            = C.IbcSRE            // Assert SRE on device calls?
 	IbcEOSrd          = C.IbcEOSrd          // Terminate reads on EOS
 	IbcEOSwrt         = C.IbcEOSwrt         // Send EOI with EOS character
@@ -177,7 +177,7 @@ const (
 	ValidNDAC = C.ValidNDAC
 	ValidDAV  = C.ValidDAV
 	BusEOI    = C.BusEOI
-	BusATN    = C.BusAT
+	BusATN    = C.BusATN
 	BusSRQ    = C.BusSRQ
 	BusREN    = C.BusREN
 	BusIFC    = C.BusIFC
