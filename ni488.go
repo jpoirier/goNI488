@@ -34,7 +34,7 @@ package ni488
 #cgo windows CFLAGS: -I.
 #cgo windows LDFLAGS: -lgpib-32 -LC:/WINDOWS/system32
 #include <stdlib.h>
-#if defined(__amd64) || defined(__amd64__) || defined(__x86_64) || defined(__x86_64__)
+#if defined(__amd64) || defined(__amd64__) && !defined(__APPLE__)
 #define size_g size_t
 #include <ni4882.h>
 #else
