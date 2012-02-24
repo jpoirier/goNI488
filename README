@@ -8,14 +8,14 @@ enabled piece of test equipment remotely and/or programmatically. NI-488.2 is an
 industry standard for GPIB communications.
 
 Common test equipment with GPIB interfaces:
-Digital Multimeter
-Power Supplies
-Universal Radio Communications Testers
-Signal Generators
-Spectrum Analyzers
-Thermal Chambers
-Network Analyzers
-Oscilloscopes
+ Digital Multimeter
+ Power Supplies
+ Universal Radio Communications Testers
+ Signal Generators
+ Spectrum Analyzers
+ Thermal Chambers
+ Network Analyzers
+ Oscilloscopes
 
 
 Lots of miscellaneous NI-488.2 information:
@@ -69,14 +69,19 @@ You'll need the Go compiler installed:
         To compile the goNI488 library you'll need MinGW and MSYS. 
             https://bitbucket.org/jpoirier/go_mingw/downloads
 
-Set cgo's LDFLAGS-top of ni488.go/ni.386.go/ni.amd64.go-for your environment. 
+Set the cgo LDFLAGS for your environment: top of ni488.go/ni.386.go/ni.amd64.go
 
 Note that cgo doesn't currently handle Windows paths so you'll need to copy 
 the NI DLL (gpib-32.dll or ni4882.dll) into the package's build directory, then
 set "-L./" in LDFLAGS. See the CL here http://codereview.appspot.com/5154042/ 
+
+National Instruments has only released a 32-bit driver. The Go wrapper, 
+and/or test program, need to be compiled in 32-bit mode. You can set 
+GOHOSTARCH=386 and GOARCH=386 to build the required Go compiler and 
+the goNI488 package. 
   
-To build the package: $ make install
-To build the example: $ 8g example.go ; 8l -o example example.8 ; ./example
+To build the package: $ go get bitbucket.com/jpoirier/goNI488
+To build and run the example: $ go run ni488_example.go
 
 
 -=-=-=-=-=-=-=-=-
