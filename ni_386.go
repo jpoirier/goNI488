@@ -212,8 +212,7 @@ const (
 func Ibbn(ud int, udname string) (ibsta int) {
 	n := C.CString(udname)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = int(C.ibbnaA(C.int(ud), n))
-	return
+	return int(C.ibbnaA(C.int(ud), n))
 }
 
 // Ibeos configures the EOS termination mode or EOS character for the board
@@ -224,6 +223,5 @@ func Ibbn(ud int, udname string) (ibsta int) {
 // disabled. Otherwise, the low byte is the EOS character and the upper
 // byte contains flags which define the EOS mode.
 func Ibeos(ud, v int) (ibsta int) {
-	ibsta = int(C.ibeos(C.int(ud), C.int(v)))
-	return
+	return int(C.ibeos(C.int(ud), C.int(v)))
 }

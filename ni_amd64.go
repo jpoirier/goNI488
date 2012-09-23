@@ -100,14 +100,14 @@ const (
 
 	// Constants used for the second parameter of the ibconfig function.
 	// They are the "option" selection codes.
-	IbcPAD            = C.IbcPAD            // Primary Address
-	IbcSAD            = C.IbcSAD            // Secondary Address
-	IbcTMO            = C.IbcTMO            // Timeout Value
-	IbcEOT            = C.IbcEOT            // Send EOI with last data byte?
-	IbcPPC            = C.IbcPPC            // Parallel Poll Configure
-	IbcREADDR         = C.IbcREADDR         // Repeat Addressing
-	IbcAUTOPOLL       = C.IbcAUTOPOLL       // Disable Auto Serial Polling
-//	IbcCICPROT        = C.IbcCICPROT        // Use the CIC Protocol? 
+	IbcPAD      = C.IbcPAD      // Primary Address
+	IbcSAD      = C.IbcSAD      // Secondary Address
+	IbcTMO      = C.IbcTMO      // Timeout Value
+	IbcEOT      = C.IbcEOT      // Send EOI with last data byte?
+	IbcPPC      = C.IbcPPC      // Parallel Poll Configure
+	IbcREADDR   = C.IbcREADDR   // Repeat Addressing
+	IbcAUTOPOLL = C.IbcAUTOPOLL // Disable Auto Serial Polling
+	//	IbcCICPROT        = C.IbcCICPROT        // Use the CIC Protocol?
 	IbcSRE            = C.IbcSRE            // Assert SRE on device calls?
 	IbcEOSrd          = C.IbcEOSrd          // Terminate reads on EOS
 	IbcEOSwrt         = C.IbcEOSwrt         // Send EOI with EOS character
@@ -209,6 +209,5 @@ func Ibcnt() (ibcnt uint32) {
 // disabled. Otherwise, the low byte is the EOS character and the upper
 // byte contains flags which define the EOS mode.
 func Ibeos(ud, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcEOS), C.int(v)))
-	return
+	return int(C.ibconfig(C.int(ud), C.int(C.IbcEOS), C.int(v)))
 }

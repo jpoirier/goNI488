@@ -118,8 +118,8 @@ func ThreadIbcntl() uint32 {
 func Ibrdf(ud int, filename string) (ibsta uint32) {
 	n := C.CString(filename)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = uint32(C.ibrdfA(C.int(ud), n))
-	return
+	return uint32(C.ibrdfA(C.int(ud), n))
+
 }
 
 // Ibask returns the current value of various configuration parameters for the
@@ -127,9 +127,8 @@ func Ibrdf(ud int, filename string) (ibsta uint32) {
 //
 // The current value of the selected configuration item is returned in v.
 func Ibask(ud, option int) (v, ibsta uint32) {
-	ibsta = uint32(C.ibask(C.int(ud), C.int(option),
+	return uint32(C.ibask(C.int(ud), C.int(option),
 		(*C.int)(unsafe.Pointer(&v))))
-	return
 }
 
 // Ibcac uses the designated GPIB board to attempt to become the Active
@@ -147,8 +146,7 @@ func Ibcac(ud, v int) (ibsta uint32) {
 // Ibclr sends the GPIB Selected Device Clear (SDC) message to the device
 // described by ud.
 func Ibclr(ud int) (ibsta uint32) {
-	ibsta = uint32(C.ibclr(C.int(ud)))
-	return
+	return uint32(C.ibclr(C.int(ud)))
 }
 
 // Ibcmd sends GPIB commands.
@@ -158,8 +156,7 @@ func Ibclr(ud int) (ibsta uint32) {
 func Ibcmd(ud int, cmds string) (ibsta uint32) {
 	n := C.CString(cmds)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = uint32(C.ibcmd(C.int(ud), unsafe.Pointer(n), C.size_g(len(cmds))))
-	return
+	return uint32(C.ibcmd(C.int(ud), unsafe.Pointer(n), C.size_g(len(cmds))))
 }
 
 // Ibcmda sends GPIB commands asynchronously.
@@ -179,8 +176,7 @@ func Ibcmda(ud int, cmds string) (ibsta uint32) {
 // Changes a configuration item in option to the specified value in
 // v for the selected board or device.
 func Ibconfig(ud, option, v int) (ibsta uint32) {
-	ibsta = uint32(C.ibconfig(C.int(ud), C.int(option), C.int(v)))
-	return
+	return uint32(C.ibconfig(C.int(ud), C.int(option), C.int(v)))
 }
 
 // Ibdev opens and initialize a device.
@@ -189,9 +185,8 @@ func Ibconfig(ud, option, v int) (ibsta uint32) {
 // functions. It opens and initializes a device descriptor, and configures
 // it according to the input parameters. Returns the device descriptor or 1.
 func Ibdev(boardID, pad, sad, tmo, eot, eos int) (dev int) {
-	dev = int(C.ibdev(C.int(boardID), C.int(pad), C.int(sad),
+	return int(C.ibdev(C.int(boardID), C.int(pad), C.int(sad),
 		C.int(tmo), C.int(eot), C.int(eos)))
-	return
 }
 
 // TODO
@@ -214,8 +209,7 @@ func Ibdev(boardID, pad, sad, tmo, eot, eos int) (dev int) {
 func Ibfind(udname string) (ud int) {
 	n := C.CString(udname)
 	defer C.free(unsafe.Pointer(n))
-	ud = int(C.ibfindA(n))
-	return
+	return int(C.ibfindA(n))
 }
 
 // Ibgts causes the GPIB board at ud to go to Standby Controller and
@@ -223,8 +217,7 @@ func Ibfind(udname string) (ud int) {
 //
 // v determines whether to perform acceptor handshaking
 func Ibgts(ud, v int) (ibsta uint32) {
-	ibsta = uint32(C.ibgts(C.int(ud), C.int(v)))
-	return
+	return uint32(C.ibgts(C.int(ud), C.int(v)))
 }
 
 // TODO
@@ -236,8 +229,7 @@ func Ibgts(ud, v int) (ibsta uint32) {
 
 // Iblines returns the status of the eight GPIB control lines.
 func Iblines(ud int) (ibsta, result uint32) {
-	ibsta = uint32(C.iblines(C.int(ud), (*C.short)(unsafe.Pointer(&result))))
-	return
+	return uint32(C.iblines(C.int(ud), (*C.short)(unsafe.Pointer(&result))))
 }
 
 // Ibln checks for the presence of a device on the bus.
@@ -250,15 +242,13 @@ func Iblines(ud int) (ibsta, result uint32) {
 // detected, a non-zero value is returned in listen. If no Listener is
 // found, zero is returned.
 func Ibln(ud, pad, sad int) (ibsta, listen uint32) {
-	ibsta = uint32(C.ibln(C.int(ud), C.int(pad), C.int(sad),
+	return uint32(C.ibln(C.int(ud), C.int(pad), C.int(sad),
 		(*C.short)(unsafe.Pointer(&listen))))
-	return
 }
 
 // Ibloc places the board in local mode if it is not in a lockout state.
 func Ibloc(ud int) (ibsta uint32) {
-	ibsta = uint32(C.ibloc(C.int(ud)))
-	return
+	return uint32(C.ibloc(C.int(ud)))
 }
 
 // Ibnotify notifies user of one or more GPIB events by invoking the user
@@ -270,10 +260,9 @@ func Ibloc(ud int) (ibsta uint32) {
 // Callback is invoked. refData User-defined reference data for the callback.
 // int mycallback(int ud, int ibsta, int iberr, long ibcntl, void *RefData)
 func Ibnotify(ud, mask int, f func(), redData []uint32) (ibsta uint32) {
-	ibsta = uint32(C.ibnotify(C.int(ud), C.int(mask),
+	return uint32(C.ibnotify(C.int(ud), C.int(mask),
 		(C.GpibNotifyCallback_t)(unsafe.Pointer(&f)),
 		unsafe.Pointer(&redData[0])))
-	return
 }
 
 // Ibonl places the device online or offline.
@@ -284,16 +273,14 @@ func Ibnotify(ud, mask int, f func(), redData []uint32) (ibsta uint32) {
 // device or interface board is left operational, or online.
 // ud Board or device descriptor
 func Ibonl(ud, v int) (ibsta int) {
-	ibsta = int(C.ibonl(C.int(ud), C.int(v)))
-	return
+	return int(C.ibonl(C.int(ud), C.int(v)))
 }
 
 // Ibpct passes control to another GPIB device with Controller capability.
 //
 // Passes Controller-in-Charge status to the device indicated by ud.
 func Ibpct(ud int) (ibsta uint32) {
-	ibsta = uint32(C.ibpct(C.int(ud)))
-	return
+	return uint32(C.ibpct(C.int(ud)))
 }
 
 // Ibppc configures parallel polling.
@@ -301,8 +288,7 @@ func Ibpct(ud int) (ibsta uint32) {
 // If ud is a device descriptor, ibppc enables or disables the device
 // from responding to parallel polls.
 func Ibppc(ud, v int) (ibsta uint32) {
-	ibsta = uint32(C.ibppc(C.int(ud), C.int(v)))
-	return
+	return uint32(C.ibppc(C.int(ud), C.int(v)))
 }
 
 // Ibrd reads data asynchronously from a device into a user buffer.
@@ -311,9 +297,8 @@ func Ibppc(ud, v int) (ibsta uint32) {
 // len(buf) bytes of data, and places the data into the buffer specified
 // buf.
 func Ibrd(ud int, buf []byte) (ibsta uint32) {
-	ibsta = uint32(C.ibrd(C.int(ud), unsafe.Pointer(&buf[0]),
+	return uint32(C.ibrd(C.int(ud), unsafe.Pointer(&buf[0]),
 		C.size_g(len(buf))))
-	return
 }
 
 // Ibrpp conducts a parallel poll.
@@ -324,14 +309,12 @@ func Ibrd(ud int, buf []byte) (ibsta uint32) {
 // conducts the parallel poll. Note that if the GPIB Interface Board to conduct
 // the parallel poll is not the Controller- In-Charge, an ECIC error is generated.
 func Ibrpp(ud int) (ibsta, resp uint32) {
-	ibsta = uint32(C.ibrpp(C.int(ud), (*C.char)(unsafe.Pointer(&resp))))
-	return
+	return uint32(C.ibrpp(C.int(ud), (*C.char)(unsafe.Pointer(&resp))))
 }
 
 // Ibrsp conducts a serial poll on the device ud.
 func Ibrsp(ud int) (ibsta, resp uint32) {
-	ibsta = uint32(C.ibrsp(C.int(ud), (*C.char)(unsafe.Pointer(&resp))))
-	return
+	return uint32(C.ibrsp(C.int(ud), (*C.char)(unsafe.Pointer(&resp))))
 }
 
 // Ibsic asserts an interface clear.
@@ -339,8 +322,7 @@ func Ibrsp(ud int) (ibsta, resp uint32) {
 // Asserts the GPIB interfaces clear (IFC) line for at least 100s
 // if the GPIB board is System Controller.
 func Ibsic(ud int) (ibsta uint32) {
-	ibsta = uint32(C.ibsic(C.int(ud)))
-	return
+	return uint32(C.ibsic(C.int(ud)))
 }
 
 // Ibstop aborts an asynchronous I/O operation.
@@ -348,8 +330,7 @@ func Ibsic(ud int) (ibsta uint32) {
 // Aborts any asynchronous read, write, or command operation that is in
 // progress and resynchronizes the application with the driver.
 func Ibstop(ud int) (ibsta uint32) {
-	ibsta = uint32(C.ibstop(C.int(ud)))
-	return
+	return uint32(C.ibstop(C.int(ud)))
 }
 
 // Ibtrg triggers the selected device.
@@ -357,8 +338,7 @@ func Ibstop(ud int) (ibsta uint32) {
 // Sends the Group Execute Trigger (GET) message to the device
 // described by ud.
 func Ibtrg(ud int) (ibsta uint32) {
-	ibsta = uint32(C.ibtrg(C.int(ud)))
-	return
+	return uint32(C.ibtrg(C.int(ud)))
 }
 
 // Ibwait waits for GPIB events.
@@ -366,8 +346,7 @@ func Ibtrg(ud int) (ibsta uint32) {
 // Monitors the events specified by mask and delays processing until
 // one or more of the events occurs.
 func Ibwait(ud, mask int) (ibsta uint32) {
-	ibsta = uint32(C.ibwait(C.int(ud), C.int(mask)))
-	return
+	return uint32(C.ibwait(C.int(ud), C.int(mask)))
 }
 
 // Ibwrt writes data to a device from a user buffer.
@@ -380,8 +359,7 @@ func Ibwait(ud, mask int) (ibsta uint32) {
 func Ibwrt(ud int, buf string) (ibsta uint32) {
 	n := C.CString(buf)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = uint32(C.ibwrt(C.int(ud), unsafe.Pointer(n), C.size_g(len(buf))))
-	return
+	return uint32(C.ibwrt(C.int(ud), unsafe.Pointer(n), C.size_g(len(buf))))
 }
 
 // Ibwrta writes data asynchronously to a device from a user buffer.
@@ -394,8 +372,7 @@ func Ibwrt(ud int, buf string) (ibsta uint32) {
 func Ibwrta(ud int, buf string) (ibsta uint32) {
 	n := C.CString(buf)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = uint32(C.ibwrta(C.int(ud), unsafe.Pointer(n), C.size_g(len(buf))))
-	return
+	return uint32(C.ibwrta(C.int(ud), unsafe.Pointer(n), C.size_g(len(buf))))
 }
 
 // Ibwrtf writes data to a device from a file.
@@ -407,8 +384,7 @@ func Ibwrta(ud int, buf string) (ibsta uint32) {
 func Ibwrtf(ud int, filename string) (ibsta uint32) {
 	n := C.CString(filename)
 	defer C.free(unsafe.Pointer(n))
-	ibsta = uint32(C.ibwrtfA(C.int(ud), n))
-	return
+	return uint32(C.ibwrtfA(C.int(ud), n))
 }
 
 // Ibdma enables or disables DMA.
@@ -427,14 +403,12 @@ func Ibdma(ud, v int) (ibsta int) {
 // If v is non-zero, then EOI is asserted when the last byte of a GPIB
 // write is sent.
 func Ibeot(ud, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcEOT), C.int(v)))
-	return
+	return int(C.ibconfig(C.int(ud), C.int(C.IbcEOT), C.int(v)))
 }
 
 // Ibist sets or clears the board individual status bit for parallel polls.
 func Ibist(ud, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcIst), C.int(v)))
-	return
+	return int(C.ibconfig(C.int(ud), C.int(C.IbcIst), C.int(v)))
 }
 
 // Ibpad changes the primary address.
@@ -442,8 +416,7 @@ func Ibist(ud, v int) (ibsta int) {
 // Sets the primary GPIB address of the board or device to v, an
 // integer ranging from 0 to 30.
 func Ibpad(ud, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcPAD), C.int(v)))
-	return
+	return int(C.ibconfig(C.int(ud), C.int(C.IbcPAD), C.int(v)))
 }
 
 // Ibrsc requests or releases system control.
@@ -451,8 +424,7 @@ func Ibpad(ud, v int) (ibsta int) {
 // Requests or releases the capability to send Interface Clear (IFC)
 // and Remote Enable (REN) messages to devices.
 func Ibrsc(ud, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcSC), C.int(v)))
-	return
+	return int(C.ibconfig(C.int(ud), C.int(C.IbcSC), C.int(v)))
 }
 
 // Ibrsv requests service and change the serial poll status byte.
@@ -461,8 +433,7 @@ func Ibrsc(ud, v int) (ibsta int) {
 // Controller with an application-dependent status byte when the
 // Controller serial polls the GPIB board.
 func Ibrsv(ud, status int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcRsv), C.int(status)))
-	return
+	return int(C.ibconfig(C.int(ud), C.int(C.IbcRsv), C.int(status)))
 }
 
 // Ibsad changes or disables the secondary address.
@@ -470,8 +441,7 @@ func Ibrsv(ud, status int) (ibsta int) {
 // Changes the secondary GPIB address of the given board or device
 // to v, an integer in the range 96 to 126 (hex 60 to hex 7E) or zero.
 func Ibsad(ud, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcSAD), C.int(v)))
-	return
+	return int(C.ibconfig(C.int(ud), C.int(C.IbcSAD), C.int(v)))
 }
 
 // Ibsre sets or clears the Remote Enable (REN) line.
@@ -479,16 +449,14 @@ func Ibsad(ud, v int) (ibsta int) {
 // If v is non-zero, the GPIB Remote Enable (REN) line is asserted.
 // If v is zero, REN is unasserted.
 func Ibsre(ud, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcSRE), C.int(v)))
-	return
+	return int(C.ibconfig(C.int(ud), C.int(C.IbcSRE), C.int(v)))
 }
 
 // Ibtmo changes or disables the timeout period.
 //
 // Sets the timeout period of the board or device to v.
 func Ibtmo(ud, v int) (ibsta int) {
-	ibsta = int(C.ibconfig(C.int(ud), C.int(C.IbcTMO), C.int(v)))
-	return
+	return int(C.ibconfig(C.int(ud), C.int(C.IbcTMO), C.int(v)))
 }
 
 //  NI-488.2 Functions
