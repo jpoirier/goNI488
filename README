@@ -1,6 +1,6 @@
 -=-=-=-=-=-=-=-=-
    Description
--=-=-=-=-=-=-=-=- 
+-=-=-=-=-=-=-=-=-
 
 Package ni488 wraps National Instruments NI488.2 General Purpose Interface Bus
 (GPIB) driver. The driver allows a client application to communicate with a GPIB
@@ -27,7 +27,7 @@ GPIB Driver Versions for Microsoft Windows and DOS:
 GPIB Driver Versions for non-Microsoft Operating Systems:
     http://zone.ni.com/devzone/cda/tut/p/id/5458
 
-Direct download: 
+Direct download:
     http://download.ni.com/support/softlib/gpib/
 
 Drivers:
@@ -35,7 +35,7 @@ Drivers:
     - Windows  On 32-bit platforms, the DLL's (gpib-32.dll or ni4882.dll)
       are compiled against ni488.h and 64-bit platforms against ni4882.h.
 
-    - OSX  32-bit library only and compiled against ni488.h. 
+    - OSX  32-bit library only and compiled against ni488.h.
 
     - Linux  Nothing on Linux yet. :-(
 
@@ -43,7 +43,7 @@ Drivers:
     Caveats
 -=-=-=-=-=-=-=-=-
 
-Only tested against the 32-bit driver so far. 
+Only tested against the 32-bit driver so far.
 
 
 -=-=-=-=-=-=-=-=-
@@ -59,28 +59,28 @@ See ni488_example.go
 
 You'll need the Go compiler installed:
 
-    For installation on FreeBSD, Linux, and OSX: 
+    For installation on FreeBSD, Linux, and OSX:
         http://golang.org/doc/install.html
 
     For Windows:
         Grab the prebuilt binaries here:
             http://code.google.com/p/gomingw/downloads/list
 
-        To compile the goNI488 library you'll need MinGW and MSYS. 
+        To compile the goNI488 library you'll need MinGW and MSYS.
             https://bitbucket.org/jpoirier/go_mingw/downloads
 
 Set the cgo LDFLAGS for your environment: top of ni488.go/ni.386.go/ni.amd64.go
 
-Note that cgo doesn't currently handle Windows paths so you'll need to copy 
+Note that cgo doesn't currently handle Windows paths so you'll need to copy
 the NI DLL (gpib-32.dll or ni4882.dll) into the package's build directory, then
-set "-L./" in LDFLAGS. See the CL here http://codereview.appspot.com/5154042/ 
+set "-L./" in LDFLAGS. See the CL here http://codereview.appspot.com/5154042/
 
-National Instruments has only released a 32-bit driver. The Go wrapper, 
-and/or test program, need to be compiled in 32-bit mode. You can set 
-GOHOSTARCH=386 and GOARCH=386 to build the required Go compiler and 
-the goNI488 package. 
-  
-To build the package: $ go get bitbucket.com/jpoirier/goNI488
+National Instruments has only released a 32-bit driver. The Go wrapper,
+and/or test program, need to be compiled in 32-bit mode. You can set
+GOHOSTARCH=386 and GOARCH=386 to build the required Go compiler and
+the goNI488 package.
+
+To build the package: $ go get github.com/jpoirier/goNI488
 To build and run the example: $ go run ni488_example.go
 
 
@@ -93,20 +93,20 @@ To build and run the example: $ go run ni488_example.go
     My Misc Notes
 -=-=-=-=-=-=-=-=-
 
-9-30-2011: 
-Windows: when compiling on 32-bit platforms AllSpoll is undefined. 
+9-30-2011:
+Windows: when compiling on 32-bit platforms AllSpoll is undefined.
 
 
 --- OSX info ---
 Method 1: Startup key combination (for current startup only)
 
-If your Mac uses the 32-bit kernel by default, but supports the 64-bit kernel, you 
+If your Mac uses the 32-bit kernel by default, but supports the 64-bit kernel, you
 can start up using the 64-bit kernel by holding the 6 and 4 keys during startup.
 
-If your Mac uses the 64-bit kernel by default, you can start up with the 32-bit 
-kernel by holding the 3 and 2 keys during startup. Your Mac will revert to the 
+If your Mac uses the 64-bit kernel by default, you can start up with the 32-bit
+kernel by holding the 3 and 2 keys during startup. Your Mac will revert to the
 default kernel the next time you reboot it.
- 
+
 
 Method 2: On-disk setting (persistent)
 
@@ -118,6 +118,6 @@ To select the 32-bit kernel for the current startup disk, use the following comm
 
 sudo systemsetup -setkernelbootarchitecture i386
 
-Note: This setting is stored in the /Library/Preferences/SystemConfiguration/com.apple.Boot.plist 
-file and will take effect every time you start up from this disk. If you start up from a different 
+Note: This setting is stored in the /Library/Preferences/SystemConfiguration/com.apple.Boot.plist
+file and will take effect every time you start up from this disk. If you start up from a different
 disk, the setting on that disk, or the hardware default, will take effect.
